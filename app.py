@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
 import os
+import time
 
-# Configuración de la página
-st.set_page_config(page_title="Polla Mundial 2026 - Grupos", page_icon="⚽", layout="wide")
+# Configuración de la página (Más ancha para aprovechar el nuevo diseño)
+st.set_page_config(page_title="Predicción Mundialista 2026", page_icon="⚽", layout="wide")
 
-# Archivos de base de datos local (Nuevos nombres para limpiar datos anteriores)
+# Archivos de base de datos local
 PARTIDOS_FILE = "partidos_mundial_completo.csv"
 PREDICCONES_FILE = "predicciones_mundial_completo.csv"
-PASSWORD_ADMIN = "grupos2026"  # Contraseña del administrador
+PASSWORD_ADMIN = "grupos2026"
 
 # --- INICIALIZACIÓN DEL FIXTURE COMPLETO (72 PARTIDOS) ---
 if not os.path.exists(PARTIDOS_FILE):
@@ -103,17 +104,15 @@ if not os.path.exists(PARTIDOS_FILE):
 if not os.path.exists(PREDICCONES_FILE):
     pd.DataFrame(columns=["usuario", "partido_id", "goles_l_pred", "goles_v_pred"]).to_csv(PREDICCONES_FILE, index=False)
 
-# Cargar datos actuales y asegurar tratamiento riguroso de dtypes de Pandas
 df_partidos = pd.read_csv(PARTIDOS_FILE)
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
-
 df_predicciones = pd.read_csv(PREDICCONES_FILE)
 
-# --- FUNCIÓN LÓGICA DE PUNTAJES ---
+# --- FUNCIÓN LÓGICA DE PUNTAJES Y RANGOS ---
 def calcular_tabla(df_p, df_preds):
     if df_preds.empty:
-        return pd.DataFrame(columns=["Participante", "Puntos Totales", "Resultados Exactos (3pts)", "Tendencias (1pt)"])
+        return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     
     partidos_jugados = df_p[df_p["jugado"] == True]
     puntajes = {}
@@ -123,11 +122,9 @@ def calcular_tabla(df_p, df_preds):
         p_id = int(pred["partido_id"])
         
         partido_real = list(partidos_jugados[partidos_jugados["id"] == p_id].to_dict(orient="index").values())
-        if not partido_real:
-            continue
+        if not partido_real: continue
             
         p_real = partido_real[0]
-        
         if user not in puntajes:
             puntajes[user] = {"puntos": 0, "exactos": 0, "tendencias": 0}
             
@@ -136,7 +133,6 @@ def calcular_tabla(df_p, df_preds):
         gl_pred = int(pred["goles_l_pred"])
         gv_pred = int(pred["goles_v_pred"])
         
-        # Sistema estándar: 3 pts exacto, 1 pt tendencia
         if gl_real == gl_pred and gv_real == gv_pred:
             puntajes[user]["puntos"] += 3
             puntajes[user]["exactos"] += 1
@@ -146,40 +142,83 @@ def calcular_tabla(df_p, df_preds):
 
     tabla_data = []
     for u, stats in puntajes.items():
-        tabla_data.append([u, stats["puntos"], stats["exactos"], stats["tendencias"]])
+        p = stats["puntos"]
+        # Sistema de Rangos Automático
+        rango = "Calentando motores 🏃"
+        if p >= 50: rango = "Oráculo Mundialista 🔮"
+        elif p >= 30: rango = "Director Técnico 👔"
+        elif p >= 10: rango = "Analista Táctico 📋"
+        elif p > 0: rango = "Puro Vendehumo 🪵"
         
-    df_tabla = pd.DataFrame(tabla_data, columns=["Participante", "Puntos Totales", "Resultados Exactos (3pts)", "Tendencias (1pt)"])
-    return df_tabla.sort_values(by="Puntos Totales", ascending=False)
+        tabla_data.append([u, rango, p, stats["exactos"], stats["tendencias"]])
+        
+    df_tabla = pd.DataFrame(tabla_data, columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
+    return df_tabla.sort_values(by="Puntos Totales", ascending=False).reset_index(drop=True)
+
+# --- PANEL LATERAL (SIDEBAR) ---
+with st.sidebar:
+    st.image("https://images.unsplash.com/photo-1518605368461-1ee125225f2b?auto=format&fit=crop&w=800&q=80", use_column_width=True)
+    st.markdown("<h2 style='text-align: center;'>⚽ La Previa</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.header("📜 Reglas Oficiales")
+    st.success("**3 Puntos:** ¡Pleno! Acierto exacto al resultado (Ej: pusiste 2-1 y terminó 2-1).")
+    st.info("**1 Punto:** Tendencia. Le achuntaste al ganador o al empate, pero no a los goles exactos.")
+    st.error("**0 Puntos:** No le achuntaste a nada. Pa' la casa.")
+    
+    st.markdown("---")
+    st.header("⏳ Avance del Mundial")
+    jugados = len(df_partidos[df_partidos["jugado"] == True])
+    st.progress(jugados / 72)
+    st.caption(f"Partidos finalizados: {jugados} de 72")
+
+# --- BANNER PRINCIPAL ANIMADO ---
+st.markdown("""
+<div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h1 style="color: white; margin:0; font-size: 3em; text-transform: uppercase; letter-spacing: 2px;">🏆 Predicción Mundialista 2026 ⚽</h1>
+    <p style="color: rgba(255,255,255,0.9); font-size: 1.2em; margin-top: 10px; font-weight: 500;">¡Demuestra quién es el verdadero Director Técnico de tus amigos!</p>
+</div>
+""", unsafe_allow_html=True)
 
 
-# --- INTERFAZ GRÁFICA ---
-st.title("🏆 POLLA MUNDIALISTA 2026 - FASE DE GRUPOS ⚽")
-st.write("Registra tus pronósticos para los 12 grupos y compite por el liderato de la primera fase.")
-
+# --- PESTAÑAS DE NAVEGACIÓN ---
 tab1, tab2, tab3 = st.tabs(["📊 Tabla de Posiciones", "📝 Mis Predicciones", "🔒 Control Administrador"])
 
-# PESTAÑA 1: RANKING
+# PESTAÑA 1: RANKING Y PODIO
 with tab1:
-    st.header("🏆 Ranking Oficial - Fase de Grupos")
+    st.header("🏆 Ranking Oficial de Jugadores")
     df_ranking = calcular_tabla(df_partidos, df_predicciones)
+    
     if not df_ranking.empty:
+        # Dibujar el Podio si hay al menos 3 personas
+        if len(df_ranking) >= 3:
+            st.markdown("### El Podio Actual")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("🥇 1er Lugar", df_ranking.iloc[0]["Participante"], f"{df_ranking.iloc[0]['Puntos Totales']} pts")
+            with col2:
+                st.metric("🥈 2do Lugar", df_ranking.iloc[1]["Participante"], f"{df_ranking.iloc[1]['Puntos Totales']} pts")
+            with col3:
+                st.metric("🥉 3er Lugar", df_ranking.iloc[2]["Participante"], f"{df_ranking.iloc[2]['Puntos Totales']} pts")
+            st.markdown("---")
+        elif len(df_ranking) > 0:
+             st.info(f"🥇 Líder indiscutido por ahora: **{df_ranking.iloc[0]['Participante']}** con {df_ranking.iloc[0]['Puntos Totales']} puntos.")
+             
+        # Mostrar la tabla con un estilo más limpio
         st.dataframe(df_ranking, use_container_width=True, hide_index=True)
     else:
-        st.info("La tabla se activará cuando el administrador ingrese el resultado del primer partido jugado.")
+        st.info("La tabla se activará y los rangos se calcularán cuando el administrador ingrese el primer partido jugado.")
 
 # PESTAÑA 2: PREDICCIONES
 with tab2:
-    st.header("📝 Tus Pronósticos de Grupos")
-    usuario = st.text_input("Ingresa tu Nombre o Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
+    st.header("📝 Tu Cartilla de Pronósticos")
+    usuario = st.text_input("Ingresa tu Apodo (El que se verá en la tabla):", key="user_name", placeholder="Ej. Tesla Jr.")
     
     if usuario:
         st.subheader(f"Formulario de {usuario}:")
-        
         grupos = sorted(df_partidos["grupo"].unique())
         
         with st.form("form_grupos_preds"):
             for grupo in grupos:
-                # Menús colapsables para no saturar la pantalla
                 with st.expander(f"🗂️ Haz clic para abrir el {grupo}"):
                     partidos_grupo = df_partidos[df_partidos["grupo"] == grupo]
                     
@@ -197,14 +236,14 @@ with tab2:
                                     gv_disp = int(float(row['goles_v_real']))
                                     st.caption(f"Resultado final: {gl_disp} - {gv_disp}")
                                 except ValueError:
-                                    st.caption(f"Resultado final: {row['goles_l_real']} - {row['goles_v_real']}")
+                                    pass
                         with col2:
                             g_l = st.number_input(f"Goles {row['local']}", min_value=0, max_value=15, value=val_l, step=1, key=f"l_{row['id']}")
                         with col3:
                             g_v = st.number_input(f"Goles {row['visita']}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{row['id']}")
                         st.markdown("---")
             
-            if st.form_submit_button("💾 Guardar Todas Mis Predicciones"):
+            if st.form_submit_button("🚀 Guardar Todas Mis Predicciones"):
                 for _, row in df_partidos.iterrows():
                     p_id = row["id"]
                     g_l_v = st.session_state[f"l_{p_id}"]
@@ -215,18 +254,22 @@ with tab2:
                     df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
                 
                 df_predicciones.to_csv(PREDICCONES_FILE, index=False)
-                st.success("¡Tus pronósticos para los 72 partidos han sido guardados!")
+                
+                # ¡Efecto de globos de celebración y pausa para que se alcancen a ver!
+                st.balloons()
+                st.success("¡Tus pronósticos para los 72 partidos están sellados! 📈")
+                time.sleep(2) # Pausa de 2 segundos para disfrutar los globos
                 st.rerun()
     else:
-        st.warning("Escribe tu nombre arriba para activar los partidos.")
+        st.warning("Escribe tu nombre arriba para activar tu cartilla de partidos.")
 
 # PESTAÑA 3: ADMIN
 with tab3:
-    st.header("🔒 Panel de Resultados Oficiales")
-    input_pass = st.text_input("Contraseña del Administrador:", type="password")
+    st.header("🔒 Panel del Árbitro (Admin)")
+    input_pass = st.text_input("Contraseña secreta:", type="password")
     
     if input_pass == PASSWORD_ADMIN:
-        st.success("Identidad confirmada.")
+        st.success("Acceso autorizado.")
         
         with st.form("form_admin_grupos"):
             grupos_admin = sorted(df_partidos["grupo"].unique())
@@ -251,10 +294,10 @@ with tab3:
                             val_v_real = 0
                         g_v_r = st.number_input("Goles Visita", min_value=0, max_value=15, value=val_v_real, key=f"rv_{row['id']}")
                     with col4:
-                        marcar_jugado = st.checkbox("¿Finalizado?", value=row["jugado"], key=f"j_{row['id']}")
+                        marcar_jugado = st.checkbox("¿Terminó?", value=row["jugado"], key=f"j_{row['id']}")
                     st.markdown("---")
             
-            if st.form_submit_button("🔄 Publicar Resultados Reales"):
+            if st.form_submit_button("🔄 Actualizar Tabla Oficial"):
                 for idx, row in df_partidos.iterrows():
                     p_id = row["id"]
                     df_partidos.at[idx, "goles_l_real"] = str(int(st.session_state[f"rl_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
@@ -262,9 +305,9 @@ with tab3:
                     df_partidos.at[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
                 
                 df_partidos.to_csv(PARTIDOS_FILE, index=False)
-                st.success("¡Puntajes de la Fase de Grupos recalculados de forma exitosa!")
+                st.success("¡Puntajes recalculados! Revisa el podio.")
                 st.rerun()
         
-        st.subheader("📥 Respaldos de Seguridad")
-        st.download_button("Descargar Tabla Partidos (CSV)", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_grupos_completo.csv", "text/csv")
-        st.download_button("Descargar Tabla Predicciones (CSV)", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_grupos_completo.csv", "text/csv")
+        st.subheader("📥 La Caja Fuerte (Respaldos)")
+        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_grupos_completo.csv", "text/csv")
+        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_grupos_completo.csv", "text/csv")
