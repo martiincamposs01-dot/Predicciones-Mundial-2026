@@ -26,7 +26,6 @@ st.markdown("""
         background-color: #111827 !important; margin-bottom: 15px;
     }
     
-    /* NUEVAS TARJETAS DE PARTIDOS CON BANDERAS GIGANTES */
     .match-card {
         background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
         padding: 15px; border-radius: 12px; text-align: center; 
@@ -41,14 +40,15 @@ st.markdown("""
         border-radius: 8px; font-weight: bold; font-size: 1.5rem; text-align: center; 
         background-color: #374151; color: #00FF87; border: 1px solid #4B5563;
     }
-    .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; }
+    .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-PARTIDOS_FILE = "partidos_mundial_v8.csv"
-PREDICCONES_FILE = "predicciones_mundial_v8.csv"
+PARTIDOS_FILE = "partidos_mundial_v9.csv"
+PREDICCONES_FILE = "predicciones_mundial_v9.csv"
 PASSWORD_ADMIN = "grupos2026"
 
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -178,7 +178,6 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
     return df_tabla.sort_values(by=["Puntos Totales", "Exactos (3pts)"], ascending=[False, False]).reset_index(drop=True)
 
 def parse_team(team_string):
-    """Separa el nombre del país del emoji de la bandera para el nuevo diseño UI"""
     parts = team_string.split()
     flag = parts[-1]
     name = " ".join(parts[:-1])
@@ -199,7 +198,7 @@ with st.sidebar:
     st.progress(jugados / len(df_partidos))
     st.caption(f"Partidos finalizados: {jugados} de {len(df_partidos)}")
 
-# --- BANNER PRINCIPAL ---
+# --- BANNER PRINCIPAL (ESTADIO) ---
 st.markdown("""
 <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 40px; border-radius: 15px; text-align: center; margin-bottom: 25px; border: 1px solid #1f2937;">
     <h1 style="color: #00FF87; margin:0; font-size: 3.5em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,135,0.5);">🏆 Predicción Mundialista</h1>
@@ -211,10 +210,11 @@ tab1, tab2, tab3, tab4 = st.tabs(["📊 Tabla de Posiciones", "📝 Mis Predicci
 
 # --- PESTAÑA 1: RANKING Y LIGAS ---
 with tab1:
-    liga_busqueda = st.text_input("🔍 Buscar Liga (Código Secreto):", value="GLOBAL", placeholder="Ej: LosVendehumos")
-    liga_activa = liga_busqueda.strip().upper() if liga_busqueda.strip() else "GLOBAL"
+    # Automatización: Estandarizar la búsqueda de liga (siempre mayúsculas y sin espacios extra)
+    liga_input = st.text_input("🔍 Buscar Liga (Código Secreto):", value="GLOBAL", placeholder="Ej: LosVendehumos")
+    liga_busqueda = liga_input.strip().upper() if liga_input.strip() else "GLOBAL"
     
-    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#1f2937; border-radius:10px; border-left: 5px solid #00FF87;'><h3 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_activa}</span></h3></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#1f2937; border-radius:10px; border-left: 5px solid #00FF87;'><h3 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_busqueda}</span></h3></div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
@@ -234,28 +234,32 @@ with tab1:
     else:
         st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
 
-# --- PESTAÑA 2: PREDICCIONES (CON BANDERAS GIGANTES) ---
+# --- PESTAÑA 2: PREDICCIONES (BANDERAS GIGANTES) ---
 with tab2:
     st.header("📝 Tu Cartilla de Pronósticos")
     col_u, col_l = st.columns(2)
-    with col_u: usuario = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
-    with col_l: liga_ingreso = st.text_input("🔑 Código de tu Liga (Opcional):", key="liga_name", placeholder="Ej. FamiliaMundial")
+    with col_u: 
+        usuario_input = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
+        # Automatización: Estandarizar nombre (Mayúscula en cada palabra)
+        usuario_limpio = usuario_input.strip().title()
+    with col_l: 
+        liga_ingreso_raw = st.text_input("🔑 Código de tu Liga (Opcional):", key="liga_name", placeholder="Ej. FamiliaMundial")
+        # Automatización: Estandarizar liga
+        liga_limpia = liga_ingreso_raw.strip().upper() if liga_ingreso_raw.strip() else "GLOBAL"
     
-    if usuario:
+    if usuario_limpio:
         with st.form("form_cronologico_preds"):
             for fecha in lista_fechas:
                 with st.expander(f"🗓️ {fecha}"):
                     partidos_dia = df_partidos[df_partidos["fecha"] == fecha]
                     for _, row in partidos_dia.iterrows():
-                        pred_existente = df_predicciones[(df_predicciones["usuario"].str.lower() == usuario.strip().lower()) & (df_predicciones["partido_id"] == row["id"])]
+                        pred_existente = df_predicciones[(df_predicciones["usuario"] == usuario_limpio) & (df_predicciones["partido_id"] == row["id"])]
                         val_l = int(pred_existente.iloc[0]["goles_l_pred"]) if not pred_existente.empty else 0
                         val_v = int(pred_existente.iloc[0]["goles_v_pred"]) if not pred_existente.empty else 0
                         
-                        # PARSEO DE BANDERAS Y NOMBRES
                         l_name, l_flag = parse_team(row['local'])
                         v_name, v_flag = parse_team(row['visita'])
                         
-                        # RENDERIZADO DE LA TARJETA VS
                         html_tarjeta = f"""
                         <div class='match-card'>
                             <p style='color:#9CA3AF; margin:0 0 10px 0; font-size:0.8rem; letter-spacing: 1px; text-transform: uppercase;'>{row['grupo']}</p>
@@ -280,27 +284,36 @@ with tab2:
                         st.markdown("<br><br>", unsafe_allow_html=True)
             
             if st.form_submit_button("🚀 Guardar Todas Mis Predicciones"):
-                liga_final = liga_ingreso.strip() if liga_ingreso else "GLOBAL"
-                for _, row in df_partidos.iterrows():
-                    p_id = row["id"]
-                    if row["jugado"]: continue 
-                    g_l_v = st.session_state[f"l_{p_id}"]
-                    g_v_v = st.session_state[f"v_{p_id}"]
-                    df_predicciones = df_predicciones[~((df_predicciones["usuario"].str.lower() == usuario.strip().lower()) & (df_predicciones["partido_id"] == p_id))]
-                    nueva_p = {"usuario": usuario.strip(), "liga": liga_final, "partido_id": p_id, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v)}
-                    df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
-                
-                df_predicciones.to_csv(PREDICCONES_FILE, index=False)
-                st.balloons()
-                st.toast('¡Tus pronósticos se guardaron como un crack!', icon='🔥')
-                time.sleep(1.5)
-                st.rerun()
+                # Prevención de error: Bloquea guardado si no hay nombre
+                if not usuario_limpio:
+                    st.error("❌ ¡Epa! Se te olvidó poner tu apodo arriba.")
+                else:
+                    for _, row in df_partidos.iterrows():
+                        p_id = row["id"]
+                        if row["jugado"]: continue 
+                        g_l_v = st.session_state[f"l_{p_id}"]
+                        g_v_v = st.session_state[f"v_{p_id}"]
+                        df_predicciones = df_predicciones[~((df_predicciones["usuario"] == usuario_limpio) & (df_predicciones["partido_id"] == p_id))]
+                        nueva_p = {"usuario": usuario_limpio, "liga": liga_limpia, "partido_id": p_id, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v)}
+                        df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
+                    
+                    df_predicciones.to_csv(PREDICCONES_FILE, index=False)
+                    st.balloons()
+                    st.toast(f'¡Pronósticos guardados para {usuario_limpio}!', icon='🔥')
+                    time.sleep(1.5)
+                    st.rerun()
     else:
-        st.warning("Escribe tu nombre arriba para desbloquear el calendario de partidos.")
+        st.warning("Escribe tu apodo para desplegar el fixture oficial.")
 
-# --- PESTAÑA 3: EL VAR ---
+# --- PESTAÑA 3: EL VAR (BANNER TECNOLÓGICO) ---
 with tab3:
-    st.header("📺 El VAR: Análisis Global")
+    st.markdown("""
+    <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px;">
+        <h2 style="color: #60EFFF; margin:0; text-transform: uppercase;">📺 Sala del VAR</h2>
+        <p style="color: #D1D5DB; margin-top: 5px;">Análisis en vivo de las tendencias globales de todos los jugadores.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     if df_predicciones.empty:
         st.info("Aún no hay suficientes predicciones para mostrar las estadísticas del VAR.")
     else:
@@ -308,18 +321,24 @@ with tab3:
         total_apuestas = len(df_predicciones["usuario"].unique())
         total_goles_predichos = df_predicciones["goles_l_pred"].sum() + df_predicciones["goles_v_pred"].sum()
         
-        with col1: st.metric("👥 Jugadores Registrados", total_apuestas)
+        with col1: st.metric("👥 Jugadores Globales", total_apuestas)
         with col2: st.metric("⚽ Goles Totales Apostados", total_goles_predichos)
         
         st.markdown("---")
         st.subheader("📊 Tendencia de Goles por Partido")
         df_predicciones["Total_Goles_Predichos"] = df_predicciones["goles_l_pred"] + df_predicciones["goles_v_pred"]
         chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
-        st.bar_chart(chart_data, color="#00FF87")
+        st.bar_chart(chart_data, color="#60EFFF")
 
-# --- PESTAÑA 4: ADMIN ---
+# --- PESTAÑA 4: ADMIN (BANNER CAMARÍN) ---
 with tab4:
-    st.header("🔒 Panel del Árbitro (Admin)")
+    st.markdown("""
+    <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1552667466-07770ae110d0?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px;">
+        <h2 style="color: #F87171; margin:0; text-transform: uppercase;">🔒 Camarín del Árbitro</h2>
+        <p style="color: #D1D5DB; margin-top: 5px;">Solo personal autorizado. Ingreso de resultados oficiales.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     input_pass = st.text_input("Contraseña secreta:", type="password")
     
     if input_pass == PASSWORD_ADMIN:
@@ -344,17 +363,17 @@ with tab4:
                     with col4: marcar_jugado = st.checkbox("¿Terminó?", value=row["jugado"], key=f"j_{row['id']}")
                     st.markdown("---")
             
-            if st.form_submit_button("🔄 Actualizar Resultados Reales"):
+            if st.form_submit_button("🔄 Confirmar Resultados Oficiales"):
                 for idx, row in df_partidos.iterrows():
                     p_id = row["id"]
                     df_partidos.at[idx, "goles_l_real"] = str(int(st.session_state[f"rl_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
                     df_partidos.at[idx, "goles_v_real"] = str(int(st.session_state[f"rv_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
                     df_partidos.at[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
                 df_partidos.to_csv(PARTIDOS_FILE, index=False)
-                st.toast('¡Resultados oficiales subidos!', icon='✅')
+                st.toast('¡Resultados bloqueados y tabla actualizada!', icon='⚖️')
                 time.sleep(1)
                 st.rerun()
         
         st.subheader("📥 La Caja Fuerte (Respaldos)")
-        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v8.csv", "text/csv")
-        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v8.csv", "text/csv")
+        st.download_button("Descargar Base de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v9.csv", "text/csv")
+        st.download_button("Descargar Base de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v9.csv", "text/csv")
