@@ -11,7 +11,6 @@ st.markdown("""
 <style>
     .stApp { background-color: #0b101a; color: #ffffff; }
     
-    /* Botones de acción principales */
     .stButton > button {
         background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%);
         color: #000000; font-weight: 900; border: none; border-radius: 12px;
@@ -22,120 +21,102 @@ st.markdown("""
         transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 255, 135, 0.5); color: #000;
     }
     
-    /* Diseño de los Expanders (Cajas de los partidos) */
     .stExpander { 
         border-radius: 12px !important; border: 1px solid #1f2937 !important; 
         background-color: #111827 !important; margin-bottom: 15px;
     }
     
-    /* Tarjetas de enfrentamientos */
+    /* NUEVAS TARJETAS DE PARTIDOS CON BANDERAS GIGANTES */
     .match-card {
-        background-color: #1f2937; padding: 10px; border-radius: 10px; 
-        text-align: center; border-left: 5px solid #00FF87; margin-bottom: 15px;
+        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        padding: 15px; border-radius: 12px; text-align: center; 
+        border-top: 3px solid #00FF87; margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
+    .flag-huge { font-size: 3rem; line-height: 1; }
+    .team-name { font-size: 1.1rem; font-weight: 800; color: #ffffff; text-transform: uppercase; margin-top: 5px; }
+    .vs-text { font-size: 1.5rem; color: #00FF87; font-weight: 900; font-style: italic; }
     
-    /* Inputs numéricos */
     .stNumberInput > div > div > input { 
-        border-radius: 8px; font-weight: bold; font-size: 1.2rem; text-align: center; 
+        border-radius: 8px; font-weight: bold; font-size: 1.5rem; text-align: center; 
         background-color: #374151; color: #00FF87; border: 1px solid #4B5563;
     }
     .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; }
-    
-    /* Estilo de la tabla */
-    .dataframe { border-radius: 10px; overflow: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-PARTIDOS_FILE = "partidos_mundial_v7.csv"
-PREDICCONES_FILE = "predicciones_mundial_v7.csv"
+PARTIDOS_FILE = "partidos_mundial_v8.csv"
+PREDICCONES_FILE = "predicciones_mundial_v8.csv"
 PASSWORD_ADMIN = "grupos2026"
 
-# --- INICIALIZACIÓN DEL FIXTURE ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
-        # JUEVES 11 DE JUNIO
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 2, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "Corea del Sur 🇰🇷", "visita": "República Checa 🇨🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # VIERNES 12 DE JUNIO
         {"id": 3, "fecha": "Viernes 12 de junio", "grupo": "Grupo B", "local": "Canadá 🇨🇦", "visita": "Bosnia y Herzegovina 🇧🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 4, "fecha": "Viernes 12 de junio", "grupo": "Grupo D", "local": "Estados Unidos 🇺🇸", "visita": "Paraguay 🇵🇾", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # SÁBADO 13 DE JUNIO
         {"id": 5, "fecha": "Sábado 13 de junio", "grupo": "Grupo B", "local": "Catar 🇶🇦", "visita": "Suiza 🇨🇭", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 6, "fecha": "Sábado 13 de junio", "grupo": "Grupo C", "local": "Brasil 🇧🇷", "visita": "Marruecos 🇲🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 7, "fecha": "Sábado 13 de junio", "grupo": "Grupo C", "local": "Haití 🇭🇹", "visita": "Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 8, "fecha": "Sábado 13 de junio", "grupo": "Grupo D", "local": "Australia 🇦🇺", "visita": "Turquía 🇹🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # DOMINGO 14 DE JUNIO
         {"id": 9, "fecha": "Domingo 14 de junio", "grupo": "Grupo E", "local": "Alemania 🇩🇪", "visita": "Curazao 🇨🇼", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 10, "fecha": "Domingo 14 de junio", "grupo": "Grupo F", "local": "Países Bajos 🇳🇱", "visita": "Japón 🇯🇵", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 11, "fecha": "Domingo 14 de junio", "grupo": "Grupo E", "local": "Costa de Marfil 🇨🇮", "visita": "Ecuador 🇪🇨", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 12, "fecha": "Domingo 14 de junio", "grupo": "Grupo F", "local": "Suecia 🇸🇪", "visita": "Túnez 🇹🇳", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # LUNES 15 DE JUNIO
         {"id": 13, "fecha": "Lunes 15 de junio", "grupo": "Grupo H", "local": "España 🇪🇸", "visita": "Cabo Verde 🇨🇻", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 14, "fecha": "Lunes 15 de junio", "grupo": "Grupo G", "local": "Bélgica 🇧🇪", "visita": "Egipto 🇪🇬", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 15, "fecha": "Lunes 15 de junio", "grupo": "Grupo H", "local": "Arabia Saudí 🇸🇦", "visita": "Uruguay 🇺🇾", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 16, "fecha": "Lunes 15 de junio", "grupo": "Grupo G", "local": "Irán 🇮🇷", "visita": "Nueva Zelanda 🇳🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # MARTES 16 DE JUNIO
         {"id": 17, "fecha": "Martes 16 de junio", "grupo": "Grupo I", "local": "Francia 🇫🇷", "visita": "Senegal 🇸🇳", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 18, "fecha": "Martes 16 de junio", "grupo": "Grupo I", "local": "Irak 🇮🇶", "visita": "Noruega 🇳🇴", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 19, "fecha": "Martes 16 de junio", "grupo": "Grupo J", "local": "Argentina 🇦🇷", "visita": "Argelia 🇩🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 20, "fecha": "Martes 16 de junio", "grupo": "Grupo J", "local": "Austria 🇦🇹", "visita": "Jordania 🇯🇴", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # MIÉRCOLES 17 DE JUNIO
         {"id": 21, "fecha": "Miércoles 17 de junio", "grupo": "Grupo K", "local": "Portugal 🇵🇹", "visita": "RD Congo 🇨🇩", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 22, "fecha": "Miércoles 17 de junio", "grupo": "Grupo L", "local": "Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿", "visita": "Croacia 🇭🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 23, "fecha": "Miércoles 17 de junio", "grupo": "Grupo L", "local": "Ghana 🇬🇭", "visita": "Panamá 🇵🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 24, "fecha": "Miércoles 17 de junio", "grupo": "Grupo K", "local": "Uzbekistán 🇺🇿", "visita": "Colombia 🇨🇴", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # JUEVES 18 DE JUNIO
         {"id": 25, "fecha": "Jueves 18 de junio", "grupo": "Grupo A", "local": "República Checa 🇨🇿", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 26, "fecha": "Jueves 18 de junio", "grupo": "Grupo B", "local": "Suiza 🇨🇭", "visita": "Bosnia y Herzegovina 🇧🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 27, "fecha": "Jueves 18 de junio", "grupo": "Grupo B", "local": "Canadá 🇨🇦", "visita": "Catar 🇶🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 28, "fecha": "Jueves 18 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Corea del Sur 🇰🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # VIERNES 19 DE JUNIO
         {"id": 29, "fecha": "Viernes 19 de junio", "grupo": "Grupo D", "local": "Estados Unidos 🇺🇸", "visita": "Australia 🇦🇺", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 30, "fecha": "Viernes 19 de junio", "grupo": "Grupo C", "local": "Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿", "visita": "Marruecos 🇲🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 31, "fecha": "Viernes 19 de junio", "grupo": "Grupo C", "local": "Brasil 🇧🇷", "visita": "Haití 🇭🇹", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 32, "fecha": "Viernes 19 de junio", "grupo": "Grupo D", "local": "Turquía 🇹🇷", "visita": "Paraguay 🇵🇾", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # SÁBADO 20 DE JUNIO
         {"id": 33, "fecha": "Sábado 20 de junio", "grupo": "Grupo F", "local": "Países Bajos 🇳🇱", "visita": "Suecia 🇸🇪", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 34, "fecha": "Sábado 20 de junio", "grupo": "Grupo E", "local": "Alemania 🇩🇪", "visita": "Costa de Marfil 🇨🇮", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 35, "fecha": "Sábado 20 de junio", "grupo": "Grupo E", "local": "Ecuador 🇪🇨", "visita": "Curazao 🇨🇼", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 36, "fecha": "Sábado 20 de junio", "grupo": "Grupo F", "local": "Túnez 🇹🇳", "visita": "Japón 🇯🇵", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # DOMINGO 21 DE JUNIO
         {"id": 37, "fecha": "Domingo 21 de junio", "grupo": "Grupo H", "local": "España 🇪🇸", "visita": "Arabia Saudí 🇸🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 38, "fecha": "Domingo 21 de junio", "grupo": "Grupo G", "local": "Bélgica 🇧🇪", "visita": "Irán 🇮🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 39, "fecha": "Domingo 21 de junio", "grupo": "Grupo H", "local": "Uruguay 🇺🇾", "visita": "Cabo Verde 🇨🇻", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 40, "fecha": "Domingo 21 de junio", "grupo": "Grupo G", "local": "Nueva Zelanda 🇳🇿", "visita": "Egipto 🇪🇬", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # LUNES 22 DE JUNIO
         {"id": 41, "fecha": "Lunes 22 de junio", "grupo": "Grupo J", "local": "Argentina 🇦🇷", "visita": "Austria 🇦🇹", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 42, "fecha": "Lunes 22 de junio", "grupo": "Grupo I", "local": "Francia 🇫🇷", "visita": "Irak 🇮🇶", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 43, "fecha": "Lunes 22 de junio", "grupo": "Grupo I", "local": "Noruega 🇳🇴", "visita": "Senegal 🇸🇳", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 44, "fecha": "Lunes 22 de junio", "grupo": "Grupo J", "local": "Jordania 🇯🇴", "visita": "Argelia 🇩🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # MARTES 23 DE JUNIO
         {"id": 45, "fecha": "Martes 23 de junio", "grupo": "Grupo K", "local": "Portugal 🇵🇹", "visita": "Uzbekistán 🇺🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 46, "fecha": "Martes 23 de junio", "grupo": "Grupo L", "local": "Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿", "visita": "Ghana 🇬🇭", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 47, "fecha": "Martes 23 de junio", "grupo": "Grupo L", "local": "Panamá 🇵🇦", "visita": "Croacia 🇭🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 48, "fecha": "Martes 23 de junio", "grupo": "Grupo K", "local": "Colombia 🇨🇴", "visita": "RD Congo 🇨🇩", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # MIÉRCOLES 24 DE JUNIO
         {"id": 49, "fecha": "Miércoles 24 de junio", "grupo": "Grupo B", "local": "Suiza 🇨🇭", "visita": "Canadá 🇨🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 50, "fecha": "Miércoles 24 de junio", "grupo": "Grupo B", "local": "Bosnia y Herzegovina 🇧🇦", "visita": "Catar 🇶🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 51, "fecha": "Miércoles 24 de junio", "grupo": "Grupo C", "local": "Marruecos 🇲🇦", "visita": "Haití 🇭🇹", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 52, "fecha": "Miércoles 24 de junio", "grupo": "Grupo C", "local": "Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿", "visita": "Brasil 🇧🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 53, "fecha": "Miércoles 24 de junio", "grupo": "Grupo A", "local": "Sudáfrica 🇿🇦", "visita": "Corea del Sur 🇰🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 54, "fecha": "Miércoles 24 de junio", "grupo": "Grupo A", "local": "República Checa 🇨🇿", "visita": "México 🇲🇽", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # JUEVES 25 DE JUNIO
         {"id": 55, "fecha": "Jueves 25 de junio", "grupo": "Grupo E", "local": "Curazao 🇨🇼", "visita": "Costa de Marfil 🇨🇮", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 56, "fecha": "Jueves 25 de junio", "grupo": "Grupo E", "local": "Ecuador 🇪🇨", "visita": "Alemania 🇩🇪", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 57, "fecha": "Jueves 25 de junio", "grupo": "Grupo F", "local": "Túnez 🇹🇳", "visita": "Países Bajos 🇳🇱", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 58, "fecha": "Jueves 25 de junio", "grupo": "Grupo F", "local": "Japón 🇯🇵", "visita": "Suecia 🇸🇪", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 59, "fecha": "Jueves 25 de junio", "grupo": "Grupo D", "local": "Turquía 🇹🇷", "visita": "Estados Unidos 🇺🇸", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 60, "fecha": "Jueves 25 de junio", "grupo": "Grupo D", "local": "Paraguay 🇵🇾", "visita": "Australia 🇦🇺", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # VIERNES 26 DE JUNIO
         {"id": 61, "fecha": "Viernes 26 de junio", "grupo": "Grupo I", "local": "Noruega 🇳🇴", "visita": "Francia 🇫🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 62, "fecha": "Viernes 26 de junio", "grupo": "Grupo I", "local": "Senegal 🇸🇳", "visita": "Irak 🇮🇶", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 63, "fecha": "Viernes 26 de junio", "grupo": "Grupo H", "local": "Cabo Verde 🇨🇻", "visita": "Arabia Saudí 🇸🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 64, "fecha": "Viernes 26 de junio", "grupo": "Grupo H", "local": "Uruguay 🇺🇾", "visita": "España 🇪🇸", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 65, "fecha": "Viernes 26 de junio", "grupo": "Grupo G", "local": "Nueva Zelanda 🇳🇿", "visita": "Bélgica 🇧🇪", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 66, "fecha": "Viernes 26 de junio", "grupo": "Grupo G", "local": "Egipto 🇪🇬", "visita": "Irán 🇮🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        # SÁBADO 27 DE JUNIO
         {"id": 67, "fecha": "Sábado 27 de junio", "grupo": "Grupo L", "local": "Panamá 🇵🇦", "visita": "Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 68, "fecha": "Sábado 27 de junio", "grupo": "Grupo L", "local": "Croacia 🇭🇷", "visita": "Ghana 🇬🇭", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 69, "fecha": "Sábado 27 de junio", "grupo": "Grupo K", "local": "Colombia 🇨🇴", "visita": "Portugal 🇵🇹", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -154,7 +135,7 @@ df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
 df_predicciones = pd.read_csv(PREDICCONES_FILE)
 lista_fechas = df_partidos["fecha"].unique()
 
-# --- FUNCIÓN LÓGICA: PUNTAJES ---
+# --- FUNCIONES AUXILIARES ---
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
     if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     if liga_filtro and liga_filtro.strip().upper() != "GLOBAL":
@@ -196,12 +177,18 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
     df_tabla = pd.DataFrame(tabla_data, columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     return df_tabla.sort_values(by=["Puntos Totales", "Exactos (3pts)"], ascending=[False, False]).reset_index(drop=True)
 
+def parse_team(team_string):
+    """Separa el nombre del país del emoji de la bandera para el nuevo diseño UI"""
+    parts = team_string.split()
+    flag = parts[-1]
+    name = " ".join(parts[:-1])
+    return name, flag
+
 # --- PANEL LATERAL ---
 with st.sidebar:
     st.image("https://images.unsplash.com/photo-1518605368461-1ee125225f2b?auto=format&fit=crop&w=800&q=80", use_column_width=True)
     st.markdown("<h2 style='text-align: center; color: #00FF87;'>⚽ La Previa</h2>", unsafe_allow_html=True)
     st.markdown("---")
-    
     st.header("📜 Reglas Oficiales")
     st.success("**3 Puntos:** ¡Pleno! Acierto exacto al resultado.")
     st.info("**1 Punto:** Tendencia. Acierto al ganador o empate.")
@@ -212,7 +199,7 @@ with st.sidebar:
     st.progress(jugados / len(df_partidos))
     st.caption(f"Partidos finalizados: {jugados} de {len(df_partidos)}")
 
-# --- BANNER PRINCIPAL (FONDO ESTADIO) ---
+# --- BANNER PRINCIPAL ---
 st.markdown("""
 <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 40px; border-radius: 15px; text-align: center; margin-bottom: 25px; border: 1px solid #1f2937;">
     <h1 style="color: #00FF87; margin:0; font-size: 3.5em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,135,0.5);">🏆 Predicción Mundialista</h1>
@@ -220,7 +207,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ¡AQUÍ ESTÁ CORREGIDO EL ORDEN DE LAS PESTAÑAS!
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Tabla de Posiciones", "📝 Mis Predicciones", "📺 El VAR (Estadísticas)", "🔒 Admin"])
 
 # --- PESTAÑA 1: RANKING Y LIGAS ---
@@ -248,7 +234,7 @@ with tab1:
     else:
         st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
 
-# --- PESTAÑA 2: PREDICCIONES ---
+# --- PESTAÑA 2: PREDICCIONES (CON BANDERAS GIGANTES) ---
 with tab2:
     st.header("📝 Tu Cartilla de Pronósticos")
     col_u, col_l = st.columns(2)
@@ -265,8 +251,22 @@ with tab2:
                         val_l = int(pred_existente.iloc[0]["goles_l_pred"]) if not pred_existente.empty else 0
                         val_v = int(pred_existente.iloc[0]["goles_v_pred"]) if not pred_existente.empty else 0
                         
-                        # Estilo Tarjeta de Enfrentamiento
-                        st.markdown(f"<div class='match-card'><p style='color:#9CA3AF; margin:0; font-size:0.8rem;'>{row['grupo']}</p><h4 style='margin:5px 0; color:white;'>{row['local']} <span style='color:#00FF87;'>⚡</span> {row['visita']}</h4></div>", unsafe_allow_html=True)
+                        # PARSEO DE BANDERAS Y NOMBRES
+                        l_name, l_flag = parse_team(row['local'])
+                        v_name, v_flag = parse_team(row['visita'])
+                        
+                        # RENDERIZADO DE LA TARJETA VS
+                        html_tarjeta = f"""
+                        <div class='match-card'>
+                            <p style='color:#9CA3AF; margin:0 0 10px 0; font-size:0.8rem; letter-spacing: 1px; text-transform: uppercase;'>{row['grupo']}</p>
+                            <div style='display:flex; justify-content:space-around; align-items:center;'>
+                                <div style='width: 40%;'><div class='flag-huge'>{l_flag}</div><div class='team-name'>{l_name}</div></div>
+                                <div style='width: 20%;'><div class='vs-text'>VS</div></div>
+                                <div style='width: 40%;'><div class='flag-huge'>{v_flag}</div><div class='team-name'>{v_name}</div></div>
+                            </div>
+                        </div>
+                        """
+                        st.markdown(html_tarjeta, unsafe_allow_html=True)
                         
                         if row["jugado"]:
                             try:
@@ -275,9 +275,9 @@ with tab2:
                                 
                         esta_bloqueado = bool(row["jugado"])
                         col1, col2 = st.columns(2)
-                        with col1: g_l = st.number_input(f"Goles {row['local'].split()[0]}", min_value=0, max_value=15, value=val_l, step=1, key=f"l_{row['id']}", disabled=esta_bloqueado)
-                        with col2: g_v = st.number_input(f"Goles {row['visita'].split()[0]}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{row['id']}", disabled=esta_bloqueado)
-                        st.markdown("<br>", unsafe_allow_html=True)
+                        with col1: g_l = st.number_input(f"Goles {l_name}", min_value=0, max_value=15, value=val_l, step=1, key=f"l_{row['id']}", disabled=esta_bloqueado)
+                        with col2: g_v = st.number_input(f"Goles {v_name}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{row['id']}", disabled=esta_bloqueado)
+                        st.markdown("<br><br>", unsafe_allow_html=True)
             
             if st.form_submit_button("🚀 Guardar Todas Mis Predicciones"):
                 liga_final = liga_ingreso.strip() if liga_ingreso else "GLOBAL"
@@ -298,7 +298,7 @@ with tab2:
     else:
         st.warning("Escribe tu nombre arriba para desbloquear el calendario de partidos.")
 
-# --- PESTAÑA 3: EL VAR (CORREGIDO SU ORDEN) ---
+# --- PESTAÑA 3: EL VAR ---
 with tab3:
     st.header("📺 El VAR: Análisis Global")
     if df_predicciones.empty:
@@ -317,7 +317,7 @@ with tab3:
         chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
         st.bar_chart(chart_data, color="#00FF87")
 
-# --- PESTAÑA 4: ADMIN (CORREGIDO SU ORDEN) ---
+# --- PESTAÑA 4: ADMIN ---
 with tab4:
     st.header("🔒 Panel del Árbitro (Admin)")
     input_pass = st.text_input("Contraseña secreta:", type="password")
@@ -328,16 +328,19 @@ with tab4:
                 st.markdown(f"### 🗓️ {fecha}")
                 partidos_dia = df_partidos[df_partidos["fecha"] == fecha]
                 for idx, row in partidos_dia.iterrows():
+                    l_name, l_flag = parse_team(row['local'])
+                    v_name, v_flag = parse_team(row['visita'])
+                    
                     col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-                    with col1: st.write(f"**{row['local']} vs {row['visita']}**")
+                    with col1: st.write(f"**{l_flag} {l_name} vs {v_name} {v_flag}**")
                     with col2:
                         try: val_l_real = int(float(row["goles_l_real"])) if row["jugado"] else 0
                         except ValueError: val_l_real = 0
-                        g_l_r = st.number_input("Goles Local", min_value=0, max_value=15, value=val_l_real, key=f"rl_{row['id']}")
+                        g_l_r = st.number_input("Local", min_value=0, max_value=15, value=val_l_real, key=f"rl_{row['id']}")
                     with col3:
                         try: val_v_real = int(float(row["goles_v_real"])) if row["jugado"] else 0
                         except ValueError: val_v_real = 0
-                        g_v_r = st.number_input("Goles Visita", min_value=0, max_value=15, value=val_v_real, key=f"rv_{row['id']}")
+                        g_v_r = st.number_input("Visita", min_value=0, max_value=15, value=val_v_real, key=f"rv_{row['id']}")
                     with col4: marcar_jugado = st.checkbox("¿Terminó?", value=row["jugado"], key=f"j_{row['id']}")
                     st.markdown("---")
             
@@ -353,5 +356,5 @@ with tab4:
                 st.rerun()
         
         st.subheader("📥 La Caja Fuerte (Respaldos)")
-        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v7.csv", "text/csv")
-        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v7.csv", "text/csv")
+        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v8.csv", "text/csv")
+        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v8.csv", "text/csv")
