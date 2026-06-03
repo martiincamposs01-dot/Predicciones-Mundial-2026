@@ -6,37 +6,44 @@ import time
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Predicción Mundialista 2026", page_icon="🏆", layout="wide")
 
-# --- ESTILOS CSS PERSONALIZADOS (AMBIENTE MUNDIALISTA) ---
+# --- ESTILOS CSS REPARADOS (MODO OSCURO / GAMER) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #f4f6f9; }
+    /* Forzar fondo oscuro elegante para que no choque con el texto */
+    .stApp { background-color: #0e1117; color: #ffffff; }
+    
+    /* Botones estilo neón */
     .stButton > button {
-        background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
-        color: white;
+        background: linear-gradient(90deg, #00b09b 0%, #96c93d 100%);
+        color: #000000;
         font-weight: 800;
         border: none;
         border-radius: 8px;
         padding: 10px 20px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     .stButton > button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 7px 14px rgba(0,0,0,0.2);
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(150, 201, 61, 0.5);
         color: black;
     }
-    .stTextInput > div > div > input { border-radius: 8px; }
-    .stNumberInput > div > div > input { border-radius: 8px; font-weight: bold; }
-    .stExpander { border-radius: 10px !important; border: 1px solid #ddd !important; }
+    
+    /* Cajas y expanders oscuros */
+    .stExpander { border-radius: 10px !important; border: 1px solid #2d3748 !important; background-color: #1a202c !important; }
+    
+    /* Input numérico */
+    .stNumberInput > div > div > input { border-radius: 8px; font-weight: bold; background-color: #2d3748; color: white; }
+    .stTextInput > div > div > input { border-radius: 8px; background-color: #2d3748; color: white; }
 </style>
 """, unsafe_allow_html=True)
 
-# Archivos de base de datos local (V4)
-PARTIDOS_FILE = "partidos_mundial_v4.csv"
-PREDICCONES_FILE = "predicciones_mundial_v4.csv"
+PARTIDOS_FILE = "partidos_mundial_v6.csv"
+PREDICCONES_FILE = "predicciones_mundial_v6.csv"
 PASSWORD_ADMIN = "grupos2026"
 
-# --- INICIALIZACIÓN DEL FIXTURE CRONOLÓGICO (72 PARTIDOS) ---
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         # JUEVES 11 DE JUNIO
@@ -70,8 +77,6 @@ if not os.path.exists(PARTIDOS_FILE):
         {"id": 22, "fecha": "Miércoles 17 de junio", "grupo": "Grupo L", "local": "Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿", "visita": "Croacia 🇭🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 23, "fecha": "Miércoles 17 de junio", "grupo": "Grupo L", "local": "Ghana 🇬🇭", "visita": "Panamá 🇵🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 24, "fecha": "Miércoles 17 de junio", "grupo": "Grupo K", "local": "Uzbekistán 🇺🇿", "visita": "Colombia 🇨🇴", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-        
-        # --- SEGUNDA RONDA ---
         # JUEVES 18 DE JUNIO
         {"id": 25, "fecha": "Jueves 18 de junio", "grupo": "Grupo A", "local": "República Checa 🇨🇿", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 26, "fecha": "Jueves 18 de junio", "grupo": "Grupo B", "local": "Suiza 🇨🇭", "visita": "Bosnia y Herzegovina 🇧🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -102,8 +107,6 @@ if not os.path.exists(PARTIDOS_FILE):
         {"id": 46, "fecha": "Martes 23 de junio", "grupo": "Grupo L", "local": "Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿", "visita": "Ghana 🇬🇭", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 47, "fecha": "Martes 23 de junio", "grupo": "Grupo L", "local": "Panamá 🇵🇦", "visita": "Croacia 🇭🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 48, "fecha": "Martes 23 de junio", "grupo": "Grupo K", "local": "Colombia 🇨🇴", "visita": "RD Congo 🇨🇩", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
-
-        # --- TERCERA RONDA ---
         # MIÉRCOLES 24 DE JUNIO
         {"id": 49, "fecha": "Miércoles 24 de junio", "grupo": "Grupo B", "local": "Suiza 🇨🇭", "visita": "Canadá 🇨🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
         {"id": 50, "fecha": "Miércoles 24 de junio", "grupo": "Grupo B", "local": "Bosnia y Herzegovina 🇧🇦", "visita": "Catar 🇶🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -146,28 +149,21 @@ lista_fechas = df_partidos["fecha"].unique()
 
 # --- FUNCIÓN LÓGICA: PUNTAJES ---
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
-    if df_preds.empty:
-        return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
-    
+    if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     if liga_filtro and liga_filtro.strip().upper() != "GLOBAL":
         df_preds = df_preds[df_preds["liga"].str.upper() == liga_filtro.strip().upper()]
-        if df_preds.empty:
-            return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
+        if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
 
     partidos_jugados = df_p[df_p["jugado"] == True]
     puntajes = {}
-    
     for _, pred in df_preds.iterrows():
         user = pred["usuario"]
         p_id = int(pred["partido_id"])
-        
         partido_real = list(partidos_jugados[partidos_jugados["id"] == p_id].to_dict(orient="index").values())
         if not partido_real: continue
-            
         p_real = partido_real[0]
-        if user not in puntajes:
-            puntajes[user] = {"puntos": 0, "exactos": 0, "tendencias": 0}
-            
+        if user not in puntajes: puntajes[user] = {"puntos": 0, "exactos": 0, "tendencias": 0}
+        
         gl_real = int(float(p_real["goles_l_real"]))
         gv_real = int(float(p_real["goles_v_real"]))
         gl_pred = int(pred["goles_l_pred"])
@@ -188,7 +184,6 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
         elif p >= 30: rango = "Director Técnico 👔"
         elif p >= 10: rango = "Analista Táctico 📋"
         elif p > 0: rango = "Puro Vendehumo 🪵"
-        
         tabla_data.append([u, rango, p, stats["exactos"], stats["tendencias"]])
         
     df_tabla = pd.DataFrame(tabla_data, columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
@@ -197,38 +192,36 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
 # --- PANEL LATERAL ---
 with st.sidebar:
     st.image("https://images.unsplash.com/photo-1518605368461-1ee125225f2b?auto=format&fit=crop&w=800&q=80", use_column_width=True)
-    st.markdown("<h2 style='text-align: center;'>⚽ La Previa</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #96c93d;'>⚽ La Previa</h2>", unsafe_allow_html=True)
     st.markdown("---")
-    st.header("🤝 Ligas Privadas")
-    st.write("¿Quieres jugar solo con tus amigos? Inventen una palabra clave. Todos deben ingresar esa misma palabra al guardar sus predicciones para competir en una tabla separada.")
-    st.markdown("---")
-    st.header("📜 Reglas")
+    
+    st.header("📜 Reglas Oficiales")
     st.success("**3 Puntos:** ¡Pleno! Acierto exacto al resultado.")
     st.info("**1 Punto:** Tendencia. Acierto al ganador o empate.")
     st.error("**0 Puntos:** Nada. Pa' la casa.")
     st.markdown("---")
     st.header("⏳ Avance del Mundial")
     jugados = len(df_partidos[df_partidos["jugado"] == True])
-    st.progress(jugados / 72)
-    st.caption(f"Partidos finalizados: {jugados} de 72")
+    st.progress(jugados / len(df_partidos))
+    st.caption(f"Partidos finalizados: {jugados} de {len(df_partidos)}")
 
 # --- BANNER PRINCIPAL ---
 st.markdown("""
-<div style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
-    <h1 style="color: #00ff87; margin:0; font-size: 3em; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">🏆 Predicción Mundialista ⚽</h1>
-    <p style="color: white; font-size: 1.3em; margin-top: 10px; font-weight: 500;">🇺🇸 EEUU - 🇲🇽 MÉXICO - 🇨🇦 CANADÁ 2026</p>
+<div style="background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
+    <h1 style="color: #ffffff; margin:0; font-size: 3em; text-transform: uppercase; text-shadow: 2px 2px 8px rgba(0,0,0,0.6);">🏆 Predicción Mundialista ⚽</h1>
+    <p style="color: #1a202c; font-size: 1.3em; margin-top: 10px; font-weight: 800; text-transform: uppercase;">🇺🇸 EEUU - 🇲🇽 MÉXICO - 🇨🇦 CANADÁ 2026</p>
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📊 Tabla de Posiciones", "📝 Mis Predicciones", "🔒 Control Administrador"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Tabla de Posiciones", "📝 Mis Predicciones", "📺 El VAR (Estadísticas)", "🔒 Admin"])
 
 # --- PESTAÑA 1: RANKING Y LIGAS ---
 with tab1:
-    liga_busqueda = st.text_input("🔍 Buscar Liga (Código Secreto):", value="GLOBAL", placeholder="Ej: CivilUdeC")
-    
-    # TITULAR GIGANTE CON EL NOMBRE DE LA LIGA
+    liga_busqueda = st.text_input("🔍 Buscar Liga (Código Secreto):", value="GLOBAL", placeholder="Ej: LosVendehumos")
     liga_activa = liga_busqueda.strip().upper() if liga_busqueda.strip() else "GLOBAL"
-    st.markdown(f"<h3 style='text-align:center; padding:15px; background-color:white; border-radius:10px; color:#11998e; box-shadow: 0 2px 5px rgba(0,0,0,0.05);'>📊 Viendo la Liga: <strong>{liga_activa}</strong></h3>", unsafe_allow_html=True)
+    
+    # Letrero de la Liga rediseñado para modo oscuro
+    st.markdown(f"<h3 style='text-align:center; padding:15px; background-color:#2d3748; border-radius:10px; color:#96c93d; border: 1px solid #4a5568;'>📊 Viendo la Liga: <strong>{liga_activa}</strong></h3>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
@@ -248,25 +241,18 @@ with tab1:
     else:
         st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
 
-# --- PESTAÑA 2: PREDICCIONES CON BLOQUEO AUTOMÁTICO ---
+# --- PESTAÑA 2: PREDICCIONES ---
 with tab2:
     st.header("📝 Tu Cartilla de Pronósticos")
-    st.error("⚠️ **IMPORTANTE:** Si dejas un casillero sin tocar (con el número 0), el sistema asumirá automáticamente que predices un empate **0 - 0** para ese partido.")
-    
     col_u, col_l = st.columns(2)
-    with col_u:
-        usuario = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
-    with col_l:
-        liga_ingreso = st.text_input("🔑 Código de tu Liga (Opcional):", key="liga_name", placeholder="Ej. FamiliaMundial", help="Si lo dejas en blanco, jugarás solo en la tabla Global.")
+    with col_u: usuario = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
+    with col_l: liga_ingreso = st.text_input("🔑 Código de tu Liga (Opcional):", key="liga_name", placeholder="Ej. FamiliaMundial")
     
     if usuario:
-        st.subheader("📅 Calendario Oficial del Mundial")
-        
         with st.form("form_cronologico_preds"):
             for fecha in lista_fechas:
                 with st.expander(f"🗓️ {fecha}"):
                     partidos_dia = df_partidos[df_partidos["fecha"] == fecha]
-                    
                     for _, row in partidos_dia.iterrows():
                         pred_existente = df_predicciones[(df_predicciones["usuario"].str.lower() == usuario.strip().lower()) & (df_predicciones["partido_id"] == row["id"])]
                         val_l = int(pred_existente.iloc[0]["goles_l_pred"]) if not pred_existente.empty else 0
@@ -275,36 +261,23 @@ with tab2:
                         col1, col2, col3 = st.columns([2, 1, 1])
                         with col1:
                             st.write(f"*{row['grupo']}* | **{row['local']} vs {row['visita']}**")
-                            # SI EL PARTIDO ESTÁ JUGADO, MUESTRA EL RESULTADO REAL Y UN AVISO
                             if row["jugado"]:
                                 try:
-                                    gl_disp = int(float(row['goles_l_real']))
-                                    gv_disp = int(float(row['goles_v_real']))
-                                    st.caption(f"✅ FINALIZADO | Resultado real: {gl_disp} - {gv_disp}")
-                                except ValueError:
-                                    pass
+                                    st.caption(f"✅ FINALIZADO | Real: {int(float(row['goles_l_real']))} - {int(float(row['goles_v_real']))}")
+                                except ValueError: pass
                                 
-                        # BLOQUEO DE CASILLAS: Si jugado es True, las casillas se desactivan (disabled=True)
                         esta_bloqueado = bool(row["jugado"])
-                        with col2:
-                            g_l = st.number_input(f"Goles {row['local']}", min_value=0, max_value=15, value=val_l, step=1, key=f"l_{row['id']}", disabled=esta_bloqueado)
-                        with col3:
-                            g_v = st.number_input(f"Goles {row['visita']}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{row['id']}", disabled=esta_bloqueado)
+                        with col2: g_l = st.number_input(f"Goles {row['local']}", min_value=0, max_value=15, value=val_l, step=1, key=f"l_{row['id']}", disabled=esta_bloqueado)
+                        with col3: g_v = st.number_input(f"Goles {row['visita']}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{row['id']}", disabled=esta_bloqueado)
                         st.markdown("---")
             
             if st.form_submit_button("🚀 Guardar Todas Mis Predicciones"):
                 liga_final = liga_ingreso.strip() if liga_ingreso else "GLOBAL"
-                
                 for _, row in df_partidos.iterrows():
                     p_id = row["id"]
-                    
-                    # SEGURIDAD EXTRA: Si el partido ya se jugó, NO actualizamos la base de datos para ese partido.
-                    if row["jugado"]:
-                        continue 
-                        
+                    if row["jugado"]: continue 
                     g_l_v = st.session_state[f"l_{p_id}"]
                     g_v_v = st.session_state[f"v_{p_id}"]
-                    
                     df_predicciones = df_predicciones[~((df_predicciones["usuario"].str.lower() == usuario.strip().lower()) & (df_predicciones["partido_id"] == p_id))]
                     nueva_p = {"usuario": usuario.strip(), "liga": liga_final, "partido_id": p_id, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v)}
                     df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
@@ -317,37 +290,44 @@ with tab2:
     else:
         st.warning("Escribe tu nombre arriba para desbloquear el calendario de partidos.")
 
-# --- PESTAÑA 3: ADMIN ---
+# --- PESTAÑA 3: EL VAR ---
+with tab4:
+    st.header("📺 El VAR: Análisis Global")
+    if df_predicciones.empty:
+        st.info("Aún no hay suficientes predicciones para mostrar las estadísticas del VAR.")
+    else:
+        total_apuestas = len(df_predicciones["usuario"].unique())
+        st.metric("Total de Jugadores Registrados Globalmente", total_apuestas)
+        st.markdown("---")
+        
+        st.subheader("📊 Tendencia de Goles")
+        df_predicciones["Total_Goles_Predichos"] = df_predicciones["goles_l_pred"] + df_predicciones["goles_v_pred"]
+        chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
+        st.bar_chart(chart_data)
+        st.caption("Cantidad de goles que la gente cree que habrá por partido (Suma de ambos equipos).")
+
+# --- PESTAÑA 4: ADMIN ---
 with tab3:
     st.header("🔒 Panel del Árbitro (Admin)")
     input_pass = st.text_input("Contraseña secreta:", type="password")
     
     if input_pass == PASSWORD_ADMIN:
-        st.success("Acceso autorizado.")
-        
         with st.form("form_admin_crono"):
             for fecha in lista_fechas:
                 st.markdown(f"### 🗓️ {fecha}")
                 partidos_dia = df_partidos[df_partidos["fecha"] == fecha]
-                
                 for idx, row in partidos_dia.iterrows():
                     col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-                    with col1:
-                        st.write(f"**{row['local']} vs {row['visita']}**")
+                    with col1: st.write(f"**{row['local']} vs {row['visita']}**")
                     with col2:
-                        try:
-                            val_l_real = int(float(row["goles_l_real"])) if row["jugado"] else 0
-                        except ValueError:
-                            val_l_real = 0
+                        try: val_l_real = int(float(row["goles_l_real"])) if row["jugado"] else 0
+                        except ValueError: val_l_real = 0
                         g_l_r = st.number_input("Goles Local", min_value=0, max_value=15, value=val_l_real, key=f"rl_{row['id']}")
                     with col3:
-                        try:
-                            val_v_real = int(float(row["goles_v_real"])) if row["jugado"] else 0
-                        except ValueError:
-                            val_v_real = 0
+                        try: val_v_real = int(float(row["goles_v_real"])) if row["jugado"] else 0
+                        except ValueError: val_v_real = 0
                         g_v_r = st.number_input("Goles Visita", min_value=0, max_value=15, value=val_v_real, key=f"rv_{row['id']}")
-                    with col4:
-                        marcar_jugado = st.checkbox("¿Terminó?", value=row["jugado"], key=f"j_{row['id']}")
+                    with col4: marcar_jugado = st.checkbox("¿Terminó?", value=row["jugado"], key=f"j_{row['id']}")
                     st.markdown("---")
             
             if st.form_submit_button("🔄 Actualizar Resultados Reales"):
@@ -356,11 +336,10 @@ with tab3:
                     df_partidos.at[idx, "goles_l_real"] = str(int(st.session_state[f"rl_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
                     df_partidos.at[idx, "goles_v_real"] = str(int(st.session_state[f"rv_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
                     df_partidos.at[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
-                
                 df_partidos.to_csv(PARTIDOS_FILE, index=False)
-                st.success("¡Puntajes recalculados! Los partidos finalizados ahora están bloqueados para los jugadores.")
+                st.success("¡Puntajes recalculados! Los partidos finalizados ahora están bloqueados.")
                 st.rerun()
         
         st.subheader("📥 La Caja Fuerte (Respaldos)")
-        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v4.csv", "text/csv")
-        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v4.csv", "text/csv")
+        st.download_button("Descargar Excel de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_v6.csv", "text/csv")
+        st.download_button("Descargar Excel de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_v6.csv", "text/csv")
