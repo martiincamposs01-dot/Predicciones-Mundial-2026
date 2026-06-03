@@ -11,7 +11,6 @@ st.markdown("""
 <style>
     .stApp { background-color: #0b101a; color: #ffffff; }
     
-    /* Animación de latido neón para el banner principal */
     @keyframes pulseGlow {
         0% { box-shadow: 0 0 15px rgba(0, 255, 135, 0.4); }
         50% { box-shadow: 0 0 30px rgba(0, 255, 135, 0.8); }
@@ -32,13 +31,9 @@ st.markdown("""
         padding: 15px; border-radius: 12px; text-align: center; 
         border-top: 4px solid #00FF87; margin-bottom: 20px; 
         box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-        position: relative;
-        overflow: hidden;
+        position: relative; overflow: hidden;
     }
-    /* Decoración de fondo de la tarjeta */
-    .match-card::before {
-        content: '⚽'; position: absolute; font-size: 5rem; opacity: 0.03; right: -10px; bottom: -20px;
-    }
+    .match-card::before { content: '⚽'; position: absolute; font-size: 5rem; opacity: 0.03; right: -10px; bottom: -20px; }
     
     .flag-huge { font-size: 3.5rem; line-height: 1; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
     .team-name { font-size: 1.2rem; font-weight: 900; color: #ffffff; text-transform: uppercase; margin-top: 5px; letter-spacing: 1px; }
@@ -47,13 +42,11 @@ st.markdown("""
     .stNumberInput > div > div > input { border-radius: 8px; font-weight: bold; font-size: 1.5rem; text-align: center; background-color: #374151; color: #00FF87; border: 1px solid #4B5563; }
     .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; font-weight: bold; }
     .stSelectbox > div > div > div { background-color: #1f2937; color: white; border-radius: 8px; }
-    
-    /* Cajas decorativas del Lobby */
     .lobby-box { background-color: #1f2937; border-radius: 12px; padding: 20px; text-align: center; border-bottom: 3px solid #60EFFF; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS (VERSIÓN OFICIAL LIMPIA) ---
+# --- BASES DE DATOS ---
 PARTIDOS_FILE = "partidos_mundial_oficial.csv"
 PREDICCONES_FILE = "predicciones_mundial_oficial.csv"
 LIGAS_FILE = "ligas_mundial_oficial.csv" 
@@ -137,11 +130,8 @@ if not os.path.exists(PARTIDOS_FILE):
     ]
     pd.DataFrame(partidos_iniciales).to_csv(PARTIDOS_FILE, index=False)
 
-if not os.path.exists(PREDICCONES_FILE):
-    pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred"]).to_csv(PREDICCONES_FILE, index=False)
-
-if not os.path.exists(LIGAS_FILE):
-    pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"]).to_csv(LIGAS_FILE, index=False)
+if not os.path.exists(PREDICCONES_FILE): pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred"]).to_csv(PREDICCONES_FILE, index=False)
+if not os.path.exists(LIGAS_FILE): pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"]).to_csv(LIGAS_FILE, index=False)
 
 df_partidos = pd.read_csv(PARTIDOS_FILE)
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
@@ -233,13 +223,27 @@ with tab0:
     """, unsafe_allow_html=True)
     
     col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite contra todos en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
-    with col_b:
-        st.markdown("<div class='lobby-box'><h2>🔐</h2><h4 style='color:white;'>Ligas Privadas</h4><p style='color:#9CA3AF;'>Crea una sala con candado solo para tus amigos.</p></div>", unsafe_allow_html=True)
-    with col_c:
-        st.markdown("<div class='lobby-box'><h2>🏆</h2><h4 style='color:white;'>Podio</h4><p style='color:#9CA3AF;'>Suma puntos y conviértete en el Oráculo Mundialista.</p></div>", unsafe_allow_html=True)
+    with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite contra todos en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
+    with col_b: st.markdown("<div class='lobby-box'><h2>🔐</h2><h4 style='color:white;'>Ligas Privadas</h4><p style='color:#9CA3AF;'>Crea una sala con candado solo para tus amigos.</p></div>", unsafe_allow_html=True)
+    with col_c: st.markdown("<div class='lobby-box'><h2>🏆</h2><h4 style='color:white;'>Podio</h4><p style='color:#9CA3AF;'>Suma puntos y conviértete en el Oráculo Mundialista.</p></div>", unsafe_allow_html=True)
     
+    # NUEVO: MARCADOR OFICIAL DE RESULTADOS
+    st.markdown("---")
+    st.subheader("✅ Marcador Oficial (Resultados)")
+    partidos_jugados = df_partidos[df_partidos["jugado"] == True]
+    
+    if not partidos_jugados.empty:
+        for _, row in partidos_jugados.iterrows():
+            l_name, l_flag = parse_team(row['local'])
+            v_name, v_flag = parse_team(row['visita'])
+            try:
+                gl = int(float(row['goles_l_real']))
+                gv = int(float(row['goles_v_real']))
+                st.markdown(f"<div style='background-color:#1f2937; padding:12px; border-radius:8px; margin-bottom:10px; text-align:center; border-left: 4px solid #00FF87; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><span style='color:#9CA3AF; font-size:0.9rem; margin-right:15px; font-weight:bold;'>{row['fecha']}</span> <span style='font-size:1.4rem; font-weight:900;'>{l_flag} {l_name} &nbsp;&nbsp;<span style='color:#00FF87; background-color:#111827; padding: 2px 10px; border-radius:5px;'>{gl} - {gv}</span>&nbsp;&nbsp; {v_name} {v_flag}</span></div>", unsafe_allow_html=True)
+            except ValueError: pass
+    else:
+        st.info("⏱️ Aún no hay partidos finalizados. ¡El balón está por rodar!")
+        
     st.markdown("---")
     st.subheader("📋 Directorio de Ligas Activas")
     if not df_predicciones.empty:
@@ -274,7 +278,7 @@ with tab1:
     else:
         st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
 
-# --- PESTAÑA 2: PREDICCIONES CON SISTEMA DE CANDADOS ---
+# --- PESTAÑA 2: PREDICCIONES ---
 with tab2:
     st.header("📝 Tu Cartilla de Pronósticos")
     usuario_input = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
