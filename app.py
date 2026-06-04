@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import time
 
-# --- CONFIGURACIÓN DE PÁGINA (CON EMOJI INFALIBLE) ---
+# --- CONFIGURACIÓN DE PÁGINA (ÍCONO EMOJI INFALIBLE) ---
 st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
 
 # --- ESTILOS CSS (MODO ESTADIO Y OPTIMIZACIÓN MÓVIL) ---
@@ -154,15 +154,19 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
         df_preds = df_preds[df_preds["liga"].str.upper() == liga_filtro.strip().upper()]
         if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
 
+    # Todos inician con 0 puntos
+    puntajes = {user: {"puntos": 0, "exactos": 0, "tendencias": 0} for user in df_preds["usuario"].unique()}
+    
     partidos_jugados = df_p[df_p["jugado"] == True]
-    puntajes = {}
+    
     for _, pred in df_preds.iterrows():
         user = pred["usuario"]
         p_id = int(pred["partido_id"])
+        
         partido_real = list(partidos_jugados[partidos_jugados["id"] == p_id].to_dict(orient="index").values())
         if not partido_real: continue
+        
         p_real = partido_real[0]
-        if user not in puntajes: puntajes[user] = {"puntos": 0, "exactos": 0, "tendencias": 0}
         
         gl_real = int(float(p_real["goles_l_real"]))
         gv_real = int(float(p_real["goles_v_real"]))
@@ -219,7 +223,6 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Inicio", "📊 Posiciones", 
 
 # --- PESTAÑA 0: INICIO (LOBBY GRÁFICO E INSTRUCCIONES) ---
 with tab0:
-    # --- INSTRUCCIONES DE INSTALACIÓN (ULTRA VISIBLES AL INICIO) ---
     st.markdown("""
     <div style="background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
         <h3 style="margin-top: 0; color: #000000; display: flex; align-items: center;">📲 ¡Instala la App Oficial en tu Celular!</h3>
@@ -269,12 +272,24 @@ with tab0:
     else:
         st.info("🎟️ Aún no hay ligas creadas. Ve a la pestaña 'Jugar' y sé el primero.")
 
-# --- PESTAÑA 1: RANKING Y LIGAS ---
+# --- PESTAÑA 1: RANKING Y LIGAS (NUEVO MENÚ DESPLEGABLE) ---
 with tab1:
-    liga_input = st.text_input("🔍 Buscar Liga (Código Secreto):", value="GLOBAL", placeholder="Ej: LosVendehumos")
-    liga_busqueda = liga_input.strip().upper() if liga_input.strip() else "GLOBAL"
+    st.markdown("""
+    <div style="background-color: #1f2937; padding: 20px; border-radius: 12px; border-left: 5px solid #00FF87; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <h3 style="color: white; margin-top: 0; display: flex; align-items: center;">🏆 ¿Qué tabla quieres ver?</h3>
+        <p style="color: #D1D5DB; font-size: 1rem; margin-bottom: 0;">Elige 'GLOBAL' para ver el ranking mundial, o selecciona la sala privada de tus amigos en la lista.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#1f2937; border-radius:10px; border-left: 5px solid #00FF87;'><h3 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_busqueda}</span></h3></div>", unsafe_allow_html=True)
+    opciones_ligas = ["GLOBAL"]
+    if not df_ligas.empty:
+        ligas_privadas = sorted(df_ligas["nombre_liga"].unique().tolist())
+        opciones_ligas.extend(ligas_privadas)
+        
+    liga_seleccionada = st.selectbox("🔍 Selecciona una liga para ver sus posiciones:", opciones_ligas)
+    liga_busqueda = liga_seleccionada.strip().upper()
+    
+    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#111827; border-radius:10px; border-top: 3px solid #00FF87;'><h3 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_busqueda}</span></h3></div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
@@ -292,7 +307,7 @@ with tab1:
              
         st.dataframe(df_ranking, use_container_width=True, hide_index=True)
     else:
-        st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
+        st.warning(f"No se encontraron jugadores con predicciones para la liga '{liga_busqueda}' o aún no se han jugado partidos.")
 
 # --- PESTAÑA 2: PREDICCIONES CON SISTEMA DE CANDADOS ---
 with tab2:
