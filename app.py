@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import time
 
-# --- CONFIGURACIÓN DE PÁGINA (CON TU LOGO) ---
-st.set_page_config(page_title="Mundial 2026", page_icon="logo-del-mundial-2026.jpg", layout="wide")
+# --- CONFIGURACIÓN DE PÁGINA (CON EMOJI INFALIBLE) ---
+st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
 
 # --- ESTILOS CSS (MODO ESTADIO Y OPTIMIZACIÓN MÓVIL) ---
 st.markdown("""
