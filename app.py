@@ -54,7 +54,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS OFICIALES ---
+# --- BASES DE DATOS OFICIALES (AQUÍ SE LIMPIÓ TODO PARA EL LANZAMIENTO) ---
 PARTIDOS_FILE = "partidos_final.csv"
 PREDICCONES_FILE = "predicciones_final.csv"
 LIGAS_FILE = "ligas_final.csv" 
@@ -215,8 +215,8 @@ with st.sidebar:
     st.markdown("<h3 style='text-align: center; color: white;'>🔗 Invita a tus amigos</h3>", unsafe_allow_html=True)
     st.caption("Copia este link para invitar a más jugadores:")
     
-    # ⚠️ IMPORTANTE: CAMBIA EL TEXTO DE ABAJO POR TU LINK REAL DE STREAMLIT
-    url_de_tu_app = https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app/#ligas-privadas
+    # ⚠️ LINK OFICIAL YA CONFIGURADO
+    url_de_tu_app = "https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app"
     
     # Esto crea una cajita con botón automático de copiar
     st.code(url_de_tu_app, language="text")
