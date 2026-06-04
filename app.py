@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import time
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
+# --- CONFIGURACIÓN DE PÁGINA (CON TU LOGO) ---
+st.set_page_config(page_title="Mundial 2026", page_icon="logo-del-mundial-2026.jpg", layout="wide")
 
 # --- ESTILOS CSS (MODO ESTADIO Y OPTIMIZACIÓN MÓVIL) ---
 st.markdown("""
@@ -195,11 +195,16 @@ def parse_team(team_string):
     name = " ".join(parts[:-1])
     return name, flag
 
-# --- PANEL LATERAL ---
+# --- PANEL LATERAL (A PRUEBA DE ERRORES MÓVILES) ---
 with st.sidebar:
-    st.image("https://images.unsplash.com/photo-1518605368461-1ee125225f2b?auto=format&fit=crop&w=800&q=80", use_column_width=True)
-    st.markdown("<h2 style='text-align: center; color: #00FF87;'>⚽ Menú</h2>", unsafe_allow_html=True)
-    st.info("💡 **Tip Pro:** Agrega esta web a tu pantalla de inicio en el celular para usarla como una app oficial.")
+    st.markdown("""
+    <div style="text-align: center; padding: 10px;">
+        <h1 style="font-size: 4rem; margin: 0; filter: drop-shadow(0px 0px 10px rgba(0,255,135,0.5));">⚽</h1>
+        <h2 style="color: #00FF87; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;">La Previa</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.info("💡 **Tip Pro:** Ve a la pestaña '🏠 Inicio' para ver cómo instalar esta web en tu celular.")
 
 # --- BANNER PRINCIPAL ANIMADO ---
 st.markdown("""
@@ -209,10 +214,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- REORGANIZACIÓN DE PESTAÑAS (MÓVIL FRIENDLY) ---
+# --- REORGANIZACIÓN DE PESTAÑAS ---
 tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Inicio", "📊 Posiciones", "📝 Jugar", "ℹ️ Info", "📺 VAR", "🔒 Árbitro"])
 
-# --- PESTAÑA 0: INICIO (LOBBY GRÁFICO) ---
+# --- PESTAÑA 0: INICIO (LOBBY GRÁFICO E INSTRUCCIONES) ---
 with tab0:
     st.markdown("""
     <div style="background-image: linear-gradient(to right, #1f2937, #111827); padding: 30px; border-radius: 12px; border-left: 5px solid #60EFFF; margin-bottom: 20px;">
@@ -220,6 +225,24 @@ with tab0:
         <p style="color: #9CA3AF; font-size: 1.1rem;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones. Únete a una liga privada o compite en el ranking global.</p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # --- INSTRUCCIONES DE INSTALACIÓN ---
+    with st.expander("📲 ¿Cómo instalar esta App en tu celular? (Recomendado)"):
+        st.markdown("""
+        <div style="background-color: #1f2937; padding: 15px; border-radius: 10px;">
+            <p style="color: #00FF87; font-weight: bold; margin-bottom: 5px;">🍏 Para iPhone (Safari):</p>
+            <ol style="color: #D1D5DB; margin-top: 0;">
+                <li>Toca el ícono de <strong>Compartir</strong> (el cuadrado con la flecha 📤) en la barra inferior.</li>
+                <li>Desliza hacia abajo y selecciona <strong>Agregar a inicio</strong> (➕).</li>
+            </ol>
+            <p style="color: #00FF87; font-weight: bold; margin-bottom: 5px; margin-top: 15px;">🤖 Para Android (Chrome):</p>
+            <ol style="color: #D1D5DB; margin-top: 0;">
+                <li>Toca los <strong>tres puntos</strong> (⋮) arriba a la derecha.</li>
+                <li>Selecciona <strong>Agregar a la pantalla principal</strong> o <strong>Instalar aplicación</strong>.</li>
+            </ol>
+            <p style="color: white; font-style: italic; font-size: 0.9rem; margin-top: 10px;">⚠️ Ojo: Si abriste este link desde Instagram, primero dale a los tres puntos y selecciona "Abrir en el navegador" para que esto funcione.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     col_a, col_b, col_c = st.columns(3)
     with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
@@ -385,7 +408,7 @@ with tab2:
     else:
         st.warning("Escribe tu apodo para desplegar el fixture oficial.")
 
-# --- PESTAÑA 3: INFORMACIÓN (NUEVA PESTAÑA MÓVIL) ---
+# --- PESTAÑA 3: INFORMACIÓN ---
 with tab3:
     st.header("ℹ️ Información del Torneo")
     st.markdown("""
@@ -466,6 +489,6 @@ with tab5:
                 time.sleep(1)
                 st.rerun()
         st.subheader("📥 La Caja Fuerte (Respaldos)")
-        st.download_button("Descargar Base de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_mundial_oficial.csv", "text/csv")
-        st.download_button("Descargar Base de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_mundial_oficial.csv", "text/csv")
-        st.download_button("Descargar Base de Ligas", df_ligas.to_csv(index=False).encode('utf-8'), "ligas_mundial_oficial.csv", "text/csv")
+        st.download_button("Descargar Base de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_oficial.csv", "text/csv")
+        st.download_button("Descargar Base de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_oficial.csv", "text/csv")
+        st.download_button("Descargar Base de Ligas", df_ligas.to_csv(index=False).encode('utf-8'), "ligas_oficial.csv", "text/csv")
