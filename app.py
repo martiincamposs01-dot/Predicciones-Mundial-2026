@@ -219,30 +219,25 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Inicio", "📊 Posiciones", 
 
 # --- PESTAÑA 0: INICIO (LOBBY GRÁFICO E INSTRUCCIONES) ---
 with tab0:
+    # --- INSTRUCCIONES DE INSTALACIÓN (ULTRA VISIBLES AL INICIO) ---
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
+        <h3 style="margin-top: 0; color: #000000; display: flex; align-items: center;">📲 ¡Instala la App Oficial en tu Celular!</h3>
+        <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">Para una experiencia perfecta a pantalla completa y sin errores, haz esto antes de jugar:</p>
+        <ul style="font-size: 0.95rem; font-weight: 600; margin-bottom: 15px;">
+            <li><strong>🍏 iPhone (Safari):</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
+            <li><strong>🤖 Android (Chrome):</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
+        </ul>
+        <span style="background-color: #000000; color: #00FF87; padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">⚠️ Ojo: Si abriste esto desde Instagram, presiona los 3 puntitos y pon "Abrir en el navegador" primero.</span>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("""
     <div style="background-image: linear-gradient(to right, #1f2937, #111827); padding: 30px; border-radius: 12px; border-left: 5px solid #60EFFF; margin-bottom: 20px;">
         <h2 style="color: white; margin-top: 0;">🏟️ ¡Bienvenidos a la Fiesta del Fútbol!</h2>
         <p style="color: #9CA3AF; font-size: 1.1rem;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones. Únete a una liga privada o compite en el ranking global.</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # --- INSTRUCCIONES DE INSTALACIÓN ---
-    with st.expander("📲 ¿Cómo instalar esta App en tu celular? (Recomendado)"):
-        st.markdown("""
-        <div style="background-color: #1f2937; padding: 15px; border-radius: 10px;">
-            <p style="color: #00FF87; font-weight: bold; margin-bottom: 5px;">🍏 Para iPhone (Safari):</p>
-            <ol style="color: #D1D5DB; margin-top: 0;">
-                <li>Toca el ícono de <strong>Compartir</strong> (el cuadrado con la flecha 📤) en la barra inferior.</li>
-                <li>Desliza hacia abajo y selecciona <strong>Agregar a inicio</strong> (➕).</li>
-            </ol>
-            <p style="color: #00FF87; font-weight: bold; margin-bottom: 5px; margin-top: 15px;">🤖 Para Android (Chrome):</p>
-            <ol style="color: #D1D5DB; margin-top: 0;">
-                <li>Toca los <strong>tres puntos</strong> (⋮) arriba a la derecha.</li>
-                <li>Selecciona <strong>Agregar a la pantalla principal</strong> o <strong>Instalar aplicación</strong>.</li>
-            </ol>
-            <p style="color: white; font-style: italic; font-size: 0.9rem; margin-top: 10px;">⚠️ Ojo: Si abriste este link desde Instagram, primero dale a los tres puntos y selecciona "Abrir en el navegador" para que esto funcione.</p>
-        </div>
-        """, unsafe_allow_html=True)
     
     col_a, col_b, col_c = st.columns(3)
     with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
