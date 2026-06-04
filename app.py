@@ -4,9 +4,9 @@ import os
 import time
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Predicción Mundialista 2026", page_icon="🏆", layout="wide")
+st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
 
-# --- ESTILOS CSS (EDICIÓN MUNDIALISTA ANIMADA) ---
+# --- ESTILOS CSS (MODO ESTADIO Y OPTIMIZACIÓN MÓVIL) ---
 st.markdown("""
 <style>
     .stApp { background-color: #0b101a; color: #ffffff; }
@@ -30,8 +30,7 @@ st.markdown("""
         background: linear-gradient(180deg, #1f2937 0%, #0d131f 100%); 
         padding: 15px; border-radius: 12px; text-align: center; 
         border-top: 4px solid #00FF87; margin-bottom: 20px; 
-        box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-        position: relative; overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.4); position: relative; overflow: hidden;
     }
     .match-card::before { content: '⚽'; position: absolute; font-size: 5rem; opacity: 0.03; right: -10px; bottom: -20px; }
     
@@ -43,16 +42,24 @@ st.markdown("""
     .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; font-weight: bold; }
     .stSelectbox > div > div > div { background-color: #1f2937; color: white; border-radius: 8px; }
     .lobby-box { background-color: #1f2937; border-radius: 12px; padding: 20px; text-align: center; border-bottom: 3px solid #60EFFF; }
+    
+    /* Optimizaciones exclusivas para Celulares */
+    @media (max-width: 768px) {
+        h1 { font-size: 1.8rem !important; }
+        .flag-huge { font-size: 2.5rem !important; }
+        .team-name { font-size: 0.9rem !important; }
+        .vs-text { font-size: 1.2rem !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS ---
-PARTIDOS_FILE = "partidos_mundial_oficial.csv"
-PREDICCONES_FILE = "predicciones_mundial_oficial.csv"
-LIGAS_FILE = "ligas_mundial_oficial.csv" 
+# --- BASES DE DATOS OFICIALES ---
+PARTIDOS_FILE = "partidos_oficial.csv"
+PREDICCONES_FILE = "predicciones_oficial.csv"
+LIGAS_FILE = "ligas_oficial.csv" 
 PASSWORD_ADMIN = "grupos2026"
 
-# --- INICIALIZACIÓN DE ARCHIVOS ---
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -191,43 +198,34 @@ def parse_team(team_string):
 # --- PANEL LATERAL ---
 with st.sidebar:
     st.image("https://images.unsplash.com/photo-1518605368461-1ee125225f2b?auto=format&fit=crop&w=800&q=80", use_column_width=True)
-    st.markdown("<h2 style='text-align: center; color: #00FF87;'>⚽ La Previa</h2>", unsafe_allow_html=True)
-    st.markdown("---")
-    st.header("📋 Reglas Oficiales")
-    st.success("**3 Puntos:** ¡Pleno! 🎯 Acierto exacto.")
-    st.info("**1 Punto:** Tendencia 🤝 Acierto al ganador.")
-    st.error("**0 Puntos:** Nada 🪵 Pa' la casa.")
-    st.markdown("---")
-    st.header("⏱️ Avance del Torneo")
-    jugados = len(df_partidos[df_partidos["jugado"] == True])
-    st.progress(jugados / len(df_partidos))
-    st.caption(f"Partidos finalizados: {jugados} de {len(df_partidos)}")
+    st.markdown("<h2 style='text-align: center; color: #00FF87;'>⚽ Menú</h2>", unsafe_allow_html=True)
+    st.info("💡 **Tip Pro:** Agrega esta web a tu pantalla de inicio en el celular para usarla como una app oficial.")
 
 # --- BANNER PRINCIPAL ANIMADO ---
 st.markdown("""
 <div style="animation: pulseGlow 3s infinite; background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 40px; border-radius: 15px; text-align: center; margin-bottom: 25px; border: 2px solid #00FF87;">
-    <h1 style="color: #00FF87; margin:0; font-size: 3.8em; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,255,135,0.8);">🏆 Predicción Mundialista</h1>
-    <p style="color: #e5e7eb; font-size: 1.3em; margin-top: 10px; font-weight: 800; letter-spacing: 4px;">🇺🇸 EEUU • 🇲🇽 MÉXICO • 🇨🇦 CANADÁ 2026</p>
+    <h1 style="color: #00FF87; margin:0; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,255,135,0.8);">🏆 Predicción Mundialista</h1>
+    <p style="color: #e5e7eb; font-size: 1.2em; margin-top: 10px; font-weight: 800; letter-spacing: 4px;">🇺🇸 EEUU • 🇲🇽 MÉXICO • 🇨🇦 CANADÁ 2026</p>
 </div>
 """, unsafe_allow_html=True)
 
-tab0, tab1, tab2, tab3, tab4 = st.tabs(["🏠 Lobby Inicial", "📊 Posiciones", "📝 Jugar", "📺 VAR", "🔒 Árbitro"])
+# --- REORGANIZACIÓN DE PESTAÑAS (MÓVIL FRIENDLY) ---
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Inicio", "📊 Posiciones", "📝 Jugar", "ℹ️ Info", "📺 VAR", "🔒 Árbitro"])
 
 # --- PESTAÑA 0: INICIO (LOBBY GRÁFICO) ---
 with tab0:
     st.markdown("""
     <div style="background-image: linear-gradient(to right, #1f2937, #111827); padding: 30px; border-radius: 12px; border-left: 5px solid #60EFFF; margin-bottom: 20px;">
         <h2 style="color: white; margin-top: 0;">🏟️ ¡Bienvenidos a la Fiesta del Fútbol!</h2>
-        <p style="color: #9CA3AF; font-size: 1.1rem;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones del Mundial 2026. Compite por la gloria, el honor y el derecho a presumir.</p>
+        <p style="color: #9CA3AF; font-size: 1.1rem;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones. Únete a una liga privada o compite en el ranking global.</p>
     </div>
     """, unsafe_allow_html=True)
     
     col_a, col_b, col_c = st.columns(3)
-    with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite contra todos en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
-    with col_b: st.markdown("<div class='lobby-box'><h2>🔐</h2><h4 style='color:white;'>Ligas Privadas</h4><p style='color:#9CA3AF;'>Crea una sala con candado solo para tus amigos.</p></div>", unsafe_allow_html=True)
-    with col_c: st.markdown("<div class='lobby-box'><h2>🏆</h2><h4 style='color:white;'>Podio</h4><p style='color:#9CA3AF;'>Suma puntos y conviértete en el Oráculo Mundialista.</p></div>", unsafe_allow_html=True)
+    with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
+    with col_b: st.markdown("<div class='lobby-box'><h2>🔐</h2><h4 style='color:white;'>Ligas Privadas</h4><p style='color:#9CA3AF;'>Crea tu propia sala con candado.</p></div>", unsafe_allow_html=True)
+    with col_c: st.markdown("<div class='lobby-box'><h2>🏆</h2><h4 style='color:white;'>Podio</h4><p style='color:#9CA3AF;'>Suma puntos y domina la tabla.</p></div>", unsafe_allow_html=True)
     
-    # NUEVO: MARCADOR OFICIAL DE RESULTADOS
     st.markdown("---")
     st.subheader("✅ Marcador Oficial (Resultados)")
     partidos_jugados = df_partidos[df_partidos["jugado"] == True]
@@ -278,7 +276,7 @@ with tab1:
     else:
         st.warning(f"No se encontraron jugadores para la liga '{liga_busqueda}' o aún no hay partidos jugados.")
 
-# --- PESTAÑA 2: PREDICCIONES ---
+# --- PESTAÑA 2: PREDICCIONES CON SISTEMA DE CANDADOS ---
 with tab2:
     st.header("📝 Tu Cartilla de Pronósticos")
     usuario_input = st.text_input("👤 Tu Apodo:", key="user_name", placeholder="Ej. Tesla Jr.")
@@ -384,9 +382,30 @@ with tab2:
                         st.toast(f'¡Pronósticos sellados en la liga {liga_limpia}!', icon='🔒')
                         time.sleep(1.5)
                         st.rerun()
+    else:
+        st.warning("Escribe tu apodo para desplegar el fixture oficial.")
 
-# --- PESTAÑA 3: EL VAR ---
+# --- PESTAÑA 3: INFORMACIÓN (NUEVA PESTAÑA MÓVIL) ---
 with tab3:
+    st.header("ℹ️ Información del Torneo")
+    st.markdown("""
+    <div style="background-color: #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #00FF87;">
+        <h3 style="color: white; margin-top: 0;">📜 Reglas de Puntuación</h3>
+        <ul style="color: #D1D5DB; font-size: 1.1rem; line-height: 1.8;">
+            <li><strong style="color: #00FF87;">3 Puntos (Pleno):</strong> ¡Le achuntaste al resultado exacto! (Ej: Predices 2-1 y termina 2-1).</li>
+            <li><strong style="color: #60EFFF;">1 Punto (Tendencia):</strong> Le achuntaste al ganador o al empate, pero no a los goles exactos.</li>
+            <li><strong style="color: #F87171;">0 Puntos:</strong> No le achuntaste a nada. Suerte para la próxima.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.subheader("⏱️ Avance del Torneo")
+    jugados = len(df_partidos[df_partidos["jugado"] == True])
+    st.progress(jugados / len(df_partidos))
+    st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
+
+# --- PESTAÑA 4: EL VAR ---
+with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #60EFFF;">
         <h2 style="color: #60EFFF; margin:0; text-transform: uppercase;">📺 Sala del VAR</h2>
@@ -407,12 +426,12 @@ with tab3:
         chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
         st.bar_chart(chart_data, color="#60EFFF")
 
-# --- PESTAÑA 4: ADMIN ---
-with tab4:
+# --- PESTAÑA 5: ADMIN ---
+with tab5:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1552667466-07770ae110d0?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #F87171;">
         <h2 style="color: #F87171; margin:0; text-transform: uppercase;">🔒 Camarín del Árbitro</h2>
-        <p style="color: #D1D5DB; margin-top: 5px;">Ingreso de resultados oficiales.</p>
+        <p style="color: #D1D5DB; margin-top: 5px;">Ingreso de resultados oficiales. Acceso restringido.</p>
     </div>
     """, unsafe_allow_html=True)
     input_pass = st.text_input("Contraseña secreta:", type="password")
