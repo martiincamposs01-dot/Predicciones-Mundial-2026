@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import time
+import urllib.parse
 
 # --- CONFIGURACIÓN DE PÁGINA (ÍCONO EMOJI INFALIBLE) ---
 st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
@@ -53,7 +54,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS OFICIALES (AQUÍ SE LIMPIÓ TODO PARA EL LANZAMIENTO) ---
+# --- BASES DE DATOS OFICIALES ---
 PARTIDOS_FILE = "partidos_final.csv"
 PREDICCONES_FILE = "predicciones_final.csv"
 LIGAS_FILE = "ligas_final.csv" 
@@ -199,7 +200,7 @@ def parse_team(team_string):
     name = " ".join(parts[:-1])
     return name, flag
 
-# --- PANEL LATERAL (A PRUEBA DE ERRORES MÓVILES) ---
+# --- PANEL LATERAL (CON BOTÓN DE COMPARTIR) ---
 with st.sidebar:
     st.markdown("""
     <div style="text-align: center; padding: 10px;">
@@ -209,6 +210,28 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
     st.info("💡 **Tip Pro:** Ve a la pestaña '🏠 Inicio' para ver cómo instalar esta web en tu celular.")
+    
+    st.markdown("---")
+    st.markdown("<h3 style='text-align: center; color: white;'>🔗 Invita a tus amigos</h3>", unsafe_allow_html=True)
+    st.caption("Copia este link para invitar a más jugadores:")
+    
+    # ⚠️ IMPORTANTE: CAMBIA EL TEXTO DE ABAJO POR TU LINK REAL DE STREAMLIT
+    url_de_tu_app = "https://PON_TU_LINK_AQUI.streamlit.app"
+    
+    # Esto crea una cajita con botón automático de copiar
+    st.code(url_de_tu_app, language="text")
+    
+    # Botón directo para enviar por WhatsApp
+    mensaje_whatsapp = f"🏆 ¡Únete a nuestra liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: {url_de_tu_app}"
+    url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote(mensaje_whatsapp)}"
+    
+    st.markdown(f"""
+    <a href="{url_whatsapp}" target="_blank" style="text-decoration: none;">
+        <div style="background-color: #25D366; color: white; text-align: center; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            📲 Enviar por WhatsApp
+        </div>
+    </a>
+    """, unsafe_allow_html=True)
 
 # --- BANNER PRINCIPAL ANIMADO ---
 st.markdown("""
