@@ -53,10 +53,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS OFICIALES ---
-PARTIDOS_FILE = "partidos_oficial.csv"
-PREDICCONES_FILE = "predicciones_oficial.csv"
-LIGAS_FILE = "ligas_oficial.csv" 
+# --- BASES DE DATOS OFICIALES (AQUÍ SE LIMPIÓ TODO PARA EL LANZAMIENTO) ---
+PARTIDOS_FILE = "partidos_final.csv"
+PREDICCONES_FILE = "predicciones_final.csv"
+LIGAS_FILE = "ligas_final.csv" 
 PASSWORD_ADMIN = "grupos2026"
 
 # --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
@@ -499,6 +499,6 @@ with tab5:
                 time.sleep(1)
                 st.rerun()
         st.subheader("📥 La Caja Fuerte (Respaldos)")
-        st.download_button("Descargar Base de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_oficial.csv", "text/csv")
-        st.download_button("Descargar Base de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_oficial.csv", "text/csv")
-        st.download_button("Descargar Base de Ligas", df_ligas.to_csv(index=False).encode('utf-8'), "ligas_oficial.csv", "text/csv")
+        st.download_button("Descargar Base de Partidos", df_partidos.to_csv(index=False).encode('utf-8'), "partidos_final.csv", "text/csv")
+        st.download_button("Descargar Base de Predicciones", df_predicciones.to_csv(index=False).encode('utf-8'), "predicciones_final.csv", "text/csv")
+        st.download_button("Descargar Base de Ligas", df_ligas.to_csv(index=False).encode('utf-8'), "ligas_final.csv", "text/csv")
