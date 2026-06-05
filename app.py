@@ -74,7 +74,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS ---
+# --- BASES DE DATOS (NUEVOS NOMBRES PARA EMPEZAR 100% LIMPIO) ---
 PARTIDOS_FILE = "mundial_partidos_oficial_2026.csv"
 PREDICCONES_FILE = "mundial_preds_oficial_2026.csv"
 LIGAS_FILE = "mundial_ligas_oficial_2026.csv" 
@@ -262,23 +262,21 @@ with tab0:
     # 1. BLOQUE DE INSTALACIÓN TIPO UFC (ANTI-TIKTOK)
     st.markdown("""
 <div style="background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
-    <h3 style="margin-top: 0; color: #000000; display: flex; align-items: center; font-weight: 900;">📲 ¡Lleva el Mundial en tu Bolsillo!</h3>
-    <p style="font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; font-family: 'Roboto', sans-serif;">Instala esta web como una App nativa para no perderte nada:</p>
-    
-    <div style="background-color: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #60EFFF;">
-        <span style="font-size: 0.95rem; color: #00FF87; font-weight: bold; font-family: 'Roboto', sans-serif;">⚠️ ¿Atrapado en el navegador de TikTok o Instagram?</span><br>
-        <span style="font-size: 0.85rem; color: #fff; font-family: 'Roboto', sans-serif;">Las redes sociales bloquean la instalación. Para solucionarlo:</span><br>
-        <ol style="font-size: 0.85rem; color: #fff; margin-top: 5px; margin-bottom: 0; padding-left: 20px; font-family: 'Roboto', sans-serif;">
-            <li>Toca la barra superior blanca que dice <em>"Estás en..."</em> o busca los 3 puntitos.</li>
-            <li>Copia el enlace de la página.</li>
-            <li>Abre <strong>Safari</strong> (iPhone) o <strong>Chrome</strong> (Android) y pega el enlace ahí.</li>
-        </ol>
-    </div>
-    
-    <ul style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0; font-family: 'Roboto', sans-serif;">
-        <li><strong>🍏 Una vez en Safari:</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
-        <li><strong>🤖 Una vez en Chrome:</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
-    </ul>
+<h3 style="margin-top: 0; color: #000000; display: flex; align-items: center; font-weight: 900;">📲 ¡Lleva el Mundial en tu Bolsillo!</h3>
+<p style="font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; font-family: 'Roboto', sans-serif;">Instala esta web como una App nativa para no perderte nada:</p>
+<div style="background-color: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #60EFFF;">
+<span style="font-size: 0.95rem; color: #00FF87; font-weight: bold; font-family: 'Roboto', sans-serif;">⚠️ ¿Atrapado en el navegador de TikTok o Instagram?</span><br>
+<span style="font-size: 0.85rem; color: #fff; font-family: 'Roboto', sans-serif;">Las redes sociales bloquean la instalación. Para solucionarlo:</span><br>
+<ol style="font-size: 0.85rem; color: #fff; margin-top: 5px; margin-bottom: 0; padding-left: 20px; font-family: 'Roboto', sans-serif;">
+<li>Toca la barra superior blanca que dice <em>"Estás en..."</em> o busca los 3 puntitos.</li>
+<li>Copia el enlace de la página.</li>
+<li>Abre <strong>Safari</strong> (iPhone) o <strong>Chrome</strong> (Android) y pega el enlace ahí.</li>
+</ol>
+</div>
+<ul style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0; font-family: 'Roboto', sans-serif;">
+<li><strong>🍏 Una vez en Safari:</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
+<li><strong>🤖 Una vez en Chrome:</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
+</ul>
 </div>
     """, unsafe_allow_html=True)
 
