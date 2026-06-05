@@ -7,10 +7,22 @@ import urllib.parse
 # --- CONFIGURACIÓN DE PÁGINA (ÍCONO EMOJI INFALIBLE) ---
 st.set_page_config(page_title="Mundial 2026", page_icon="🏆", layout="wide")
 
-# --- ESTILOS CSS (MODO ESTADIO Y OPTIMIZACIÓN MÓVIL) ---
+# --- ENLACES Y RECURSOS ---
+URL_APP_MUNDIAL = "https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app"
+URL_NOTICIA_GRUPOS = "https://notivisiongeorgia.com/2025/12/05/asi-quedaron-los-grupos-de-la-copa-mundial-2026/"
+URL_IMAGEN_GRUPOS = "https://i0.wp.com/notivisiongeorgia.com/wp-content/uploads/2025/12/Untitled-design-19.png?fit=1080%2C730&ssl=1"
+
+# --- ESTILOS CSS (TIPOGRAFÍA ÉPICA Y MODO ESTADIO) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #0b101a; color: #ffffff; }
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700;900&display=swap');
+    
+    .stApp { background-color: #0b101a; color: #ffffff; font-family: 'Roboto', sans-serif; }
+    
+    h1, h2, h3, .team-name, .vs-text, button[data-baseweb="tab"] { 
+        font-family: 'Bebas Neue', sans-serif !important; 
+        letter-spacing: 1px; 
+    }
     
     @keyframes pulseGlow {
         0% { box-shadow: 0 0 15px rgba(0, 255, 135, 0.4); }
@@ -18,10 +30,16 @@ st.markdown("""
         100% { box-shadow: 0 0 15px rgba(0, 255, 135, 0.4); }
     }
     
+    button[data-baseweb="tab"] {
+        font-size: 1.5rem !important; 
+        text-transform: uppercase;
+        padding: 10px 20px !important;
+    }
+    
     .stButton > button {
         background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%);
-        color: #000000; font-weight: 900; border: none; border-radius: 12px;
-        padding: 12px 24px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1.5px; width: 100%;
+        color: #000000; font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; border: none; border-radius: 12px;
+        padding: 10px 24px; transition: all 0.3s ease; letter-spacing: 2px; width: 100%;
     }
     .stButton > button:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 255, 135, 0.6); color: #000; }
     
@@ -36,28 +54,30 @@ st.markdown("""
     .match-card::before { content: '⚽'; position: absolute; font-size: 5rem; opacity: 0.03; right: -10px; bottom: -20px; }
     
     .flag-huge { font-size: 3.5rem; line-height: 1; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
-    .team-name { font-size: 1.2rem; font-weight: 900; color: #ffffff; text-transform: uppercase; margin-top: 5px; letter-spacing: 1px; }
-    .vs-text { font-size: 1.8rem; color: #00FF87; font-weight: 900; font-style: italic; text-shadow: 0 0 10px rgba(0,255,135,0.5); }
+    .team-name { font-size: 1.8rem; font-weight: 400; color: #ffffff; text-transform: uppercase; margin-top: 5px; letter-spacing: 2px; }
+    .vs-text { font-size: 2.5rem; color: #00FF87; font-weight: 400; font-style: italic; text-shadow: 0 0 10px rgba(0,255,135,0.5); }
     
-    .stNumberInput > div > div > input { border-radius: 8px; font-weight: bold; font-size: 1.5rem; text-align: center; background-color: #374151; color: #00FF87; border: 1px solid #4B5563; }
-    .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; font-weight: bold; }
+    .stNumberInput > div > div > input { border-radius: 8px; font-weight: bold; font-family: 'Bebas Neue', sans-serif; font-size: 2rem; text-align: center; background-color: #374151; color: #00FF87; border: 1px solid #4B5563; }
+    .stTextInput > div > div > input { border-radius: 8px; background-color: #1f2937; color: white; font-weight: bold; font-family: 'Roboto', sans-serif;}
     .stSelectbox > div > div > div { background-color: #1f2937; color: white; border-radius: 8px; }
     .lobby-box { background-color: #1f2937; border-radius: 12px; padding: 20px; text-align: center; border-bottom: 3px solid #60EFFF; }
     
     /* Optimizaciones exclusivas para Celulares */
     @media (max-width: 768px) {
-        h1 { font-size: 1.8rem !important; }
+        h1 { font-size: 2.2rem !important; }
+        .banner-subtitle { font-size: 1.2rem !important; }
         .flag-huge { font-size: 2.5rem !important; }
-        .team-name { font-size: 0.9rem !important; }
-        .vs-text { font-size: 1.2rem !important; }
+        .team-name { font-size: 1.2rem !important; }
+        .vs-text { font-size: 1.8rem !important; }
+        button[data-baseweb="tab"] { font-size: 1rem !important; padding: 10px 5px !important; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASES DE DATOS OFICIALES (AQUÍ SE LIMPIÓ TODO PARA EL LANZAMIENTO) ---
-PARTIDOS_FILE = "partidos_final.csv"
-PREDICCONES_FILE = "predicciones_final.csv"
-LIGAS_FILE = "ligas_final.csv" 
+# --- BASES DE DATOS ---
+PARTIDOS_FILE = "mundial_partidos_oficial_2026.csv"
+PREDICCONES_FILE = "mundial_preds_oficial_2026.csv"
+LIGAS_FILE = "mundial_ligas_oficial_2026.csv" 
 PASSWORD_ADMIN = "grupos2026"
 
 # --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
@@ -155,9 +175,7 @@ def calcular_tabla(df_p, df_preds, liga_filtro=None):
         df_preds = df_preds[df_preds["liga"].str.upper() == liga_filtro.strip().upper()]
         if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
 
-    # Todos inician con 0 puntos
     puntajes = {user: {"puntos": 0, "exactos": 0, "tendencias": 0} for user in df_preds["usuario"].unique()}
-    
     partidos_jugados = df_p[df_p["jugado"] == True]
     
     for _, pred in df_preds.iterrows():
@@ -215,29 +233,24 @@ with st.sidebar:
     st.markdown("<h3 style='text-align: center; color: white;'>🔗 Invita a tus amigos</h3>", unsafe_allow_html=True)
     st.caption("Copia este link para invitar a más jugadores:")
     
-    # ⚠️ LINK OFICIAL YA CONFIGURADO
-    url_de_tu_app = "https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app"
+    st.code(URL_APP_MUNDIAL, language="text")
     
-    # Esto crea una cajita con botón automático de copiar
-    st.code(url_de_tu_app, language="text")
-    
-    # Botón directo para enviar por WhatsApp
-    mensaje_whatsapp = f"🏆 ¡Únete a nuestra liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: {url_de_tu_app}"
+    mensaje_whatsapp = f"🏆 ¡Únete a nuestra liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: {URL_APP_MUNDIAL}"
     url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote(mensaje_whatsapp)}"
     
     st.markdown(f"""
     <a href="{url_whatsapp}" target="_blank" style="text-decoration: none;">
-        <div style="background-color: #25D366; color: white; text-align: center; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <div style="background-color: #25D366; color: white; text-align: center; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-family: 'Roboto', sans-serif;">
             📲 Enviar por WhatsApp
         </div>
     </a>
     """, unsafe_allow_html=True)
 
-# --- BANNER PRINCIPAL ANIMADO ---
+# --- BANNER PRINCIPAL ANIMADO (FONDO ESTADIO) ---
 st.markdown("""
-<div style="animation: pulseGlow 3s infinite; background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 40px; border-radius: 15px; text-align: center; margin-bottom: 25px; border: 2px solid #00FF87;">
-    <h1 style="color: #00FF87; margin:0; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,255,135,0.8);">🏆 Predicción Mundialista</h1>
-    <p style="color: #e5e7eb; font-size: 1.2em; margin-top: 10px; font-weight: 800; letter-spacing: 4px;">🇺🇸 EEUU • 🇲🇽 MÉXICO • 🇨🇦 CANADÁ 2026</p>
+<div style="animation: pulseGlow 3s infinite; background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://mediospublicos.uy/wp-content/uploads/2025/10/fad1fab784a384e167d98804139a10414dc89088w-1191x670.jpg'); background-size: cover; background-position: center; padding: 50px; border-radius: 15px; text-align: center; margin-bottom: 25px; border: 2px solid #00FF87;">
+    <h1 style="color: #00FF87; margin:0; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,255,135,0.8); font-size: 4rem;">🏆 Predicción Mundialista</h1>
+    <p class="banner-subtitle" style="color: #e5e7eb; font-size: 1.5rem; margin-top: 10px; font-weight: 800; letter-spacing: 4px; font-family: 'Bebas Neue', sans-serif;">🇺🇸 EEUU • 🇲🇽 MÉXICO • 🇨🇦 CANADÁ 2026</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -246,29 +259,51 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Inicio", "📊 Posiciones", 
 
 # --- PESTAÑA 0: INICIO (LOBBY GRÁFICO E INSTRUCCIONES) ---
 with tab0:
+    # 1. BLOQUE DE INSTALACIÓN TIPO UFC (ANTI-TIKTOK)
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
-        <h3 style="margin-top: 0; color: #000000; display: flex; align-items: center;">📲 ¡Instala la App Oficial en tu Celular!</h3>
-        <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">Para una experiencia perfecta a pantalla completa y sin errores, haz esto antes de jugar:</p>
-        <ul style="font-size: 0.95rem; font-weight: 600; margin-bottom: 15px;">
-            <li><strong>🍏 iPhone (Safari):</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
-            <li><strong>🤖 Android (Chrome):</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
-        </ul>
-        <span style="background-color: #000000; color: #00FF87; padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">⚠️ Ojo: Si abriste esto desde Instagram, presiona los 3 puntitos y pon "Abrir en el navegador" primero.</span>
+<div style="background: linear-gradient(135deg, #00FF87 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
+    <h3 style="margin-top: 0; color: #000000; display: flex; align-items: center; font-weight: 900;">📲 ¡Lleva el Mundial en tu Bolsillo!</h3>
+    <p style="font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; font-family: 'Roboto', sans-serif;">Instala esta web como una App nativa para no perderte nada:</p>
+    
+    <div style="background-color: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #60EFFF;">
+        <span style="font-size: 0.95rem; color: #00FF87; font-weight: bold; font-family: 'Roboto', sans-serif;">⚠️ ¿Atrapado en el navegador de TikTok o Instagram?</span><br>
+        <span style="font-size: 0.85rem; color: #fff; font-family: 'Roboto', sans-serif;">Las redes sociales bloquean la instalación. Para solucionarlo:</span><br>
+        <ol style="font-size: 0.85rem; color: #fff; margin-top: 5px; margin-bottom: 0; padding-left: 20px; font-family: 'Roboto', sans-serif;">
+            <li>Toca la barra superior blanca que dice <em>"Estás en..."</em> o busca los 3 puntitos.</li>
+            <li>Copia el enlace de la página.</li>
+            <li>Abre <strong>Safari</strong> (iPhone) o <strong>Chrome</strong> (Android) y pega el enlace ahí.</li>
+        </ol>
+    </div>
+    
+    <ul style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0; font-family: 'Roboto', sans-serif;">
+        <li><strong>🍏 Una vez en Safari:</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
+        <li><strong>🤖 Una vez en Chrome:</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
+    </ul>
+</div>
+    """, unsafe_allow_html=True)
+
+    # 2. SECCIÓN VISUAL DE LOS GRUPOS OFICIALES
+    st.markdown("<h2 style='text-align: center; color: #00FF87; text-transform: uppercase;'>🏆 Grupos Oficiales Mundial 2026</h2>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='text-align: center; margin-bottom: 30px;'>
+        <a href='{URL_NOTICIA_GRUPOS}' target='_blank'>
+            <img src='{URL_IMAGEN_GRUPOS}' style='width: 100%; max-width: 800px; border-radius: 12px; border: 2px solid #00FF87; box-shadow: 0 4px 10px rgba(0,255,135,0.3); transition: transform 0.3s ease;' onmouseover='this.style.transform="scale(1.02)"' onmouseout='this.style.transform="scale(1)"'>
+        </a>
+        <p style='color: #9CA3AF; font-size: 0.85rem; margin-top: 5px; font-family: "Roboto", sans-serif;'>Haz clic en la imagen para leer la noticia oficial del sorteo.</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div style="background-image: linear-gradient(to right, #1f2937, #111827); padding: 30px; border-radius: 12px; border-left: 5px solid #60EFFF; margin-bottom: 20px;">
         <h2 style="color: white; margin-top: 0;">🏟️ ¡Bienvenidos a la Fiesta del Fútbol!</h2>
-        <p style="color: #9CA3AF; font-size: 1.1rem;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones. Únete a una liga privada o compite en el ranking global.</p>
+        <p style="color: #9CA3AF; font-size: 1.1rem; font-family: 'Roboto', sans-serif;">Demuestra quién es el verdadero analista táctico en la competencia definitiva de predicciones. Únete a una liga privada o compite en el ranking global.</p>
     </div>
     """, unsafe_allow_html=True)
     
     col_a, col_b, col_c = st.columns(3)
-    with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h4 style='color:white;'>Global</h4><p style='color:#9CA3AF;'>Compite en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
-    with col_b: st.markdown("<div class='lobby-box'><h2>🔐</h2><h4 style='color:white;'>Ligas Privadas</h4><p style='color:#9CA3AF;'>Crea tu propia sala con candado.</p></div>", unsafe_allow_html=True)
-    with col_c: st.markdown("<div class='lobby-box'><h2>🏆</h2><h4 style='color:white;'>Podio</h4><p style='color:#9CA3AF;'>Suma puntos y domina la tabla.</p></div>", unsafe_allow_html=True)
+    with col_a: st.markdown("<div class='lobby-box'><h2>🌍</h2><h3 style='color:white; margin:0;'>Global</h3><p style='color:#9CA3AF; font-family: \"Roboto\", sans-serif;'>Compite en el Ranking Abierto.</p></div>", unsafe_allow_html=True)
+    with col_b: st.markdown("<div class='lobby-box'><h2>🔐</h2><h3 style='color:white; margin:0;'>Privadas</h3><p style='color:#9CA3AF; font-family: \"Roboto\", sans-serif;'>Crea tu propia sala con candado.</p></div>", unsafe_allow_html=True)
+    with col_c: st.markdown("<div class='lobby-box'><h2>🏆</h2><h3 style='color:white; margin:0;'>Podio</h3><p style='color:#9CA3AF; font-family: \"Roboto\", sans-serif;'>Suma puntos y domina la tabla.</p></div>", unsafe_allow_html=True)
     
     st.markdown("---")
     st.subheader("✅ Marcador Oficial (Resultados)")
@@ -281,7 +316,7 @@ with tab0:
             try:
                 gl = int(float(row['goles_l_real']))
                 gv = int(float(row['goles_v_real']))
-                st.markdown(f"<div style='background-color:#1f2937; padding:12px; border-radius:8px; margin-bottom:10px; text-align:center; border-left: 4px solid #00FF87; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><span style='color:#9CA3AF; font-size:0.9rem; margin-right:15px; font-weight:bold;'>{row['fecha']}</span> <span style='font-size:1.4rem; font-weight:900;'>{l_flag} {l_name} &nbsp;&nbsp;<span style='color:#00FF87; background-color:#111827; padding: 2px 10px; border-radius:5px;'>{gl} - {gv}</span>&nbsp;&nbsp; {v_name} {v_flag}</span></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background-color:#1f2937; padding:12px; border-radius:8px; margin-bottom:10px; text-align:center; border-left: 4px solid #00FF87; box-shadow: 0 4px 6px rgba(0,0,0,0.3);'><span style='color:#9CA3AF; font-size:0.9rem; margin-right:15px; font-weight:bold; font-family: \"Roboto\", sans-serif;'>{row['fecha']}</span> <span style='font-size:1.4rem; font-weight:900;'>{l_flag} <span class='team-name' style='font-size:1.4rem;'>{l_name}</span> &nbsp;&nbsp;<span style='color:#00FF87; background-color:#111827; padding: 2px 10px; border-radius:5px;'>{gl} - {gv}</span>&nbsp;&nbsp; <span class='team-name' style='font-size:1.4rem;'>{v_name}</span> {v_flag}</span></div>", unsafe_allow_html=True)
             except ValueError: pass
     else:
         st.info("⏱️ Aún no hay partidos finalizados. ¡El balón está por rodar!")
@@ -295,12 +330,12 @@ with tab0:
     else:
         st.info("🎟️ Aún no hay ligas creadas. Ve a la pestaña 'Jugar' y sé el primero.")
 
-# --- PESTAÑA 1: RANKING Y LIGAS (NUEVO MENÚ DESPLEGABLE) ---
+# --- PESTAÑA 1: RANKING Y LIGAS ---
 with tab1:
     st.markdown("""
     <div style="background-color: #1f2937; padding: 20px; border-radius: 12px; border-left: 5px solid #00FF87; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-        <h3 style="color: white; margin-top: 0; display: flex; align-items: center;">🏆 ¿Qué tabla quieres ver?</h3>
-        <p style="color: #D1D5DB; font-size: 1rem; margin-bottom: 0;">Elige 'GLOBAL' para ver el ranking mundial, o selecciona la sala privada de tus amigos en la lista.</p>
+        <h2 style="color: white; margin-top: 0; display: flex; align-items: center;">🏆 ¿Qué tabla quieres ver?</h2>
+        <p style="color: #D1D5DB; font-size: 1rem; margin-bottom: 0; font-family: 'Roboto', sans-serif;">Elige 'GLOBAL' para ver el ranking mundial, o selecciona la sala privada de tus amigos en la lista.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -312,7 +347,7 @@ with tab1:
     liga_seleccionada = st.selectbox("🔍 Selecciona una liga para ver sus posiciones:", opciones_ligas)
     liga_busqueda = liga_seleccionada.strip().upper()
     
-    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#111827; border-radius:10px; border-top: 3px solid #00FF87;'><h3 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_busqueda}</span></h3></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; padding:15px; background-color:#111827; border-radius:10px; border-top: 3px solid #00FF87;'><h2 style='margin:0; color:white;'>📊 Viendo la Liga: <span style='color:#00FF87;'>{liga_busqueda}</span></h2></div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
@@ -379,7 +414,7 @@ with tab2:
                         
                         html_tarjeta = f"""
                         <div class='match-card'>
-                            <p style='color:#9CA3AF; margin:0 0 10px 0; font-size:0.8rem; letter-spacing: 1px; text-transform: uppercase;'>{row['grupo']}</p>
+                            <p style='color:#9CA3AF; margin:0 0 10px 0; font-size:0.9rem; letter-spacing: 2px; text-transform: uppercase; font-family: "Bebas Neue", sans-serif;'>{row['grupo']}</p>
                             <div style='display:flex; justify-content:space-around; align-items:center;'>
                                 <div style='width: 40%;'><div class='flag-huge'>{l_flag}</div><div class='team-name'>{l_name}</div></div>
                                 <div style='width: 20%;'><div class='vs-text'>VS</div></div>
@@ -391,7 +426,7 @@ with tab2:
                         
                         if row["jugado"]:
                             try:
-                                st.markdown(f"<p style='text-align:center; color:#EF4444; font-weight:bold;'>✅ FINALIZADO | Real: {int(float(row['goles_l_real']))} - {int(float(row['goles_v_real']))}</p>", unsafe_allow_html=True)
+                                st.markdown(f"<p style='text-align:center; color:#EF4444; font-weight:bold; font-family: \"Roboto\", sans-serif;'>✅ FINALIZADO | Real: {int(float(row['goles_l_real']))} - {int(float(row['goles_v_real']))}</p>", unsafe_allow_html=True)
                             except ValueError: pass
                                 
                         esta_bloqueado = bool(row["jugado"])
@@ -446,8 +481,8 @@ with tab3:
     st.header("ℹ️ Información del Torneo")
     st.markdown("""
     <div style="background-color: #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #00FF87;">
-        <h3 style="color: white; margin-top: 0;">📜 Reglas de Puntuación</h3>
-        <ul style="color: #D1D5DB; font-size: 1.1rem; line-height: 1.8;">
+        <h2 style="color: white; margin-top: 0;">📜 Reglas de Puntuación</h2>
+        <ul style="color: #D1D5DB; font-size: 1.1rem; line-height: 1.8; font-family: 'Roboto', sans-serif;">
             <li><strong style="color: #00FF87;">3 Puntos (Pleno):</strong> ¡Le achuntaste al resultado exacto! (Ej: Predices 2-1 y termina 2-1).</li>
             <li><strong style="color: #60EFFF;">1 Punto (Tendencia):</strong> Le achuntaste al ganador o al empate, pero no a los goles exactos.</li>
             <li><strong style="color: #F87171;">0 Puntos:</strong> No le achuntaste a nada. Suerte para la próxima.</li>
@@ -457,15 +492,15 @@ with tab3:
     
     st.subheader("⏱️ Avance del Torneo")
     jugados = len(df_partidos[df_partidos["jugado"] == True])
-    st.progress(jugados / len(df_partidos))
+    st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
     st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
 
 # --- PESTAÑA 4: EL VAR ---
 with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #60EFFF;">
-        <h2 style="color: #60EFFF; margin:0; text-transform: uppercase;">📺 Sala del VAR</h2>
-        <p style="color: #D1D5DB; margin-top: 5px;">Análisis en vivo de las tendencias globales.</p>
+        <h1 style="color: #60EFFF; margin:0; text-transform: uppercase;">📺 Sala del VAR</h1>
+        <p style="color: #D1D5DB; margin-top: 5px; font-family: 'Roboto', sans-serif; font-size: 1.1rem;">Análisis en vivo de las tendencias globales.</p>
     </div>
     """, unsafe_allow_html=True)
     if df_predicciones.empty:
@@ -486,8 +521,8 @@ with tab4:
 with tab5:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1552667466-07770ae110d0?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #F87171;">
-        <h2 style="color: #F87171; margin:0; text-transform: uppercase;">🔒 Camarín del Árbitro</h2>
-        <p style="color: #D1D5DB; margin-top: 5px;">Ingreso de resultados oficiales. Acceso restringido.</p>
+        <h1 style="color: #F87171; margin:0; text-transform: uppercase;">🔒 Camarín del Árbitro</h1>
+        <p style="color: #D1D5DB; margin-top: 5px; font-family: 'Roboto', sans-serif; font-size: 1.1rem;">Ingreso de resultados oficiales. Acceso restringido.</p>
     </div>
     """, unsafe_allow_html=True)
     input_pass = st.text_input("Contraseña secreta:", type="password")
