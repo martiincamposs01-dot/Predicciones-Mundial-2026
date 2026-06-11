@@ -509,7 +509,7 @@ with tab1:
     </div>
     """, unsafe_allow_html=True)
     
-    # 🔥 UX Y SEGURIDAD: COLUMNAS PARA NOMBRE Y PIN (CON NORMALIZACIÓN DE TILDES)
+    # 🔥 UX Y SEGURIDAD: COLUMNAS PARA NOMBRE Y PIN
     col_u1, col_u2 = st.columns([2, 1])
     with col_u1:
         usuario_input = st.text_input("👤 INGRESA TU APODO:", placeholder="Ej. El Analista", max_chars=20, value=st.session_state.get("usuario_registrado", ""))
@@ -542,7 +542,6 @@ with tab1:
 
     st.markdown("---")
     
-    # 🔥 LÓGICA DE SEGURIDAD MÁXIMA (Baneos, Duplicados, PIN Anti-Ceros y Absorción de Tildes)
     bloquear_acceso = False
     
     if not usuario_norm_input or not pin_input:
@@ -557,15 +556,13 @@ with tab1:
         ya_registrado = not pred_usuario_liga.empty
         
         pin_correcto = False
-        usuario_oficial = usuario_input.strip().title() # Por defecto es como lo escribió ahora
+        usuario_oficial = usuario_input.strip().title()
 
         if ya_registrado:
-            # Si el usuario ya existe, absorbemos su nombre EXACTO de la base de datos
             usuario_oficial = pred_usuario_liga.iloc[0]['usuario'] 
             pin_guardado = str(pred_usuario_liga.iloc[0]['pin_jugador']).strip()
             pin_ingresado = str(pin_input).strip()
             
-            # 🔥 FIX MAESTRO PARA LOS CERO A LA IZQUIERDA:
             if pin_ingresado == pin_guardado or (pin_ingresado.isdigit() and pin_guardado.isdigit() and int(pin_ingresado) == int(pin_guardado)):
                 pin_correcto = True
 
@@ -582,7 +579,6 @@ with tab1:
             st.success(f"✅ ¡Nuevo jugador listo! Guarda bien tu PIN ({pin_input}) para poder volver mañana a esta misma liga.")
             bloquear_acceso = False
         
-    # 🔥 SOLO MOSTRAMOS LOS PARTIDOS SI NO HAY BLOQUEOS
     if not bloquear_acceso:
         st.info("💡 **Abre la fecha de hoy, ingresa tus goles y presiona el botón Guardar.** Recuerda que una vez guardado, el partido se bloquea.")
         
@@ -599,7 +595,6 @@ with tab1:
                 with st.form(f"form_{fecha}"):
                     for _, row in partidos_dia.iterrows():
                         p_id_f = int(row["id"])
-                        # Buscamos con el nombre oficial de la base de datos
                         pred_existente = df_predicciones[(df_predicciones["usuario"] == usuario_oficial) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_f)]
                         
                         ya_predijo = not pred_existente.empty
@@ -642,7 +637,6 @@ with tab1:
                         with col2: st.number_input(f"Goles {v_name}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{p_id_f}", disabled=esta_bloqueado)
                         st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
                         
-                    # Botón Submit POR DÍA
                     if st.form_submit_button(f"🔒 GUARDAR PRONÓSTICOS: {fecha}", disabled=todos_jugados):
                         acceso = True
                         
@@ -670,7 +664,6 @@ with tab1:
                                 p_id_s = int(row["id"])
                                 if row["jugado"]: continue
                                 
-                                # 🔥 SOLO GUARDAR SI NO ESTABA PREDICHO ANTES
                                 pred_existente_db = df_predicciones[(df_predicciones["usuario"] == usuario_oficial) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_s)]
                                 if not pred_existente_db.empty: continue 
                                 
@@ -687,7 +680,6 @@ with tab1:
                                     
                                 df_predicciones.to_csv(PREDICCONES_FILE, index=False)
                                 
-                                # 🔥 MEMORIA DE SESIÓN (UX)
                                 st.session_state["usuario_registrado"] = usuario_oficial
                                 st.session_state["pin_registrado"] = pin_input
                                 st.session_state["saved_opcion"] = opcion_liga
@@ -707,19 +699,17 @@ with tab1:
                             else:
                                 st.warning("⚠️ No se guardó nada nuevo porque los partidos seleccionados ya estaban bloqueados o finalizados.")
 
-# --- PESTAÑA 2: RÁNKINGS (Buscador y Scroll) ---
+# --- PESTAÑA 2: RÁNKINGS ---
 with tab2:
     st.markdown("<h2 style='color: #3B82F6; font-size: 3.5rem;'>🏅 TABLA DE POSICIONES OFICIAL</h2>", unsafe_allow_html=True)
     
     opciones_ligas = ["GLOBAL"]
     if not df_ligas.empty: opciones_ligas.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
     
-    # 🔥 BÚSQUEDA Y FILTRO
     col_filtro1, col_filtro2 = st.columns(2)
     with col_filtro1:
         liga_busqueda = st.selectbox("🔍 Filtrar por Liga:", opciones_ligas).strip().upper()
     with col_filtro2:
-        # Se normaliza la búsqueda para que no importen las tildes al buscar
         busqueda_input = st.text_input("🔍 Buscar mi apodo:")
         busqueda_usuario = normalizar_nombre(busqueda_input)
     
@@ -739,7 +729,6 @@ with tab2:
             with col3: st.metric("🥉 3er Lugar", df_ranking.iloc[2]["Participante"], f"{df_ranking.iloc[2]['Puntos Totales']} pts")
             st.markdown("---")
         
-        # 🔥 SCROLL: height=400 limita la tabla para que no sea infinita
         st.dataframe(df_ranking, use_container_width=True, hide_index=True, height=400)
     else: 
         st.info("Aún no hay predictores registrados o no se encontraron resultados.")
@@ -789,14 +778,15 @@ with tab3:
     st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
     st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
 
-# --- PESTAÑA 4: EL VAR (STATS EXPANDIDAS) ---
+# --- PESTAÑA 4: EL VAR Y ESPIAR QUINIELAS ---
 with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(3, 11, 20, 0.6), rgba(3, 11, 20, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #3B82F6;">
         <h1 style="color: #60A5FA; margin:0; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif; font-size: 4rem;">📺 Sala del VAR</h1>
-        <p style="color: #cbd5e1; margin-top: 5px; font-family: 'Montserrat', sans-serif; font-size: 1.1rem;">Análisis en vivo de las tendencias globales de los apostadores.</p>
+        <p style="color: #cbd5e1; margin-top: 5px; font-family: 'Montserrat', sans-serif; font-size: 1.1rem;">Análisis en vivo de las tendencias y quinielas de los apostadores.</p>
     </div>
     """, unsafe_allow_html=True)
+    
     if df_predicciones.empty:
         st.info("Aún no hay suficientes predicciones para mostrar las estadísticas.")
     else:
@@ -805,11 +795,43 @@ with tab4:
         total_goles_predichos = df_predicciones["goles_l_pred"].sum() + df_predicciones["goles_v_pred"].sum()
         with col1: st.metric("👥 Directores Técnicos (Globales)", total_apuestas)
         with col2: st.metric("⚽ Goles Totales Pronosticados", total_goles_predichos)
-        st.markdown("---")
-        st.subheader("📊 Tendencia de Goles Promedio por Partido")
-        df_predicciones["Total_Goles_Predichos"] = df_predicciones["goles_l_pred"] + df_predicciones["goles_v_pred"]
-        chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
-        st.bar_chart(chart_data, color="#3B82F6")
+        
+        # 🔥 SECCIÓN NUEVA: ESPIAR QUINIELAS
+        st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #10B981; font-size: 3rem;'>🕵️‍♂️ ESPIAR QUINIELAS DE LA COMUNIDAD</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #94a3b8; font-size: 1.1rem;'>Selecciona tu liga y el partido para ver qué pronosticaron los demás directores técnicos.</p>", unsafe_allow_html=True)
+        
+        col_esp1, col_esp2 = st.columns(2)
+        with col_esp1:
+            opciones_ligas_esp = ["GLOBAL"]
+            if not df_ligas.empty: opciones_ligas_esp.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
+            esp_liga = st.selectbox("1️⃣ Selecciona la Liga a espiar:", opciones_ligas_esp, key="esp_liga").strip().upper()
+        with col_esp2:
+            opciones_partidos = [f"{row['fecha']} | {parse_team(row['local'])[0]} vs {parse_team(row['visita'])[0]}" for _, row in df_partidos.iterrows()]
+            esp_partido = st.selectbox("2️⃣ Selecciona el Partido:", opciones_partidos, key="esp_partido")
+        
+        idx_partido = opciones_partidos.index(esp_partido)
+        id_partido_real = df_partidos.iloc[idx_partido]["id"]
+        equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
+        equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
+        bandera_l = parse_team(df_partidos.iloc[idx_partido]['local'])[1]
+        bandera_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[1]
+        
+        df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
+        if esp_liga != "GLOBAL":
+            df_esp_preds = df_esp_preds[df_esp_preds["liga"].str.upper() == esp_liga]
+            
+        if not df_esp_preds.empty:
+            df_esp_show = pd.DataFrame()
+            df_esp_show["Director Técnico"] = df_esp_preds["usuario"]
+            df_esp_show[f"Goles {equipo_l} {bandera_l}"] = df_esp_preds["goles_l_pred"].astype(str)
+            df_esp_show[f"Goles {equipo_v} {bandera_v}"] = df_esp_preds["goles_v_pred"].astype(str)
+            df_esp_show["Resultado Predicho"] = df_esp_show.apply(lambda x: f"{x.iloc[1]} - {x.iloc[2]}", axis=1)
+            
+            st.markdown(f"<h4 style='color: #60A5FA; margin-top: 15px;'>Predicciones para: {equipo_l} vs {equipo_v} en la liga '{esp_liga}'</h4>", unsafe_allow_html=True)
+            st.dataframe(df_esp_show[["Director Técnico", "Resultado Predicho"]], use_container_width=True, hide_index=True)
+        else:
+            st.info("Nadie en esta liga ha pronosticado este partido aún. ¡Aprovecha la ventaja!")
 
 # --- PESTAÑA 5: ADMIN Y RECUPERACIÓN ---
 with tab5:
@@ -845,7 +867,6 @@ with tab5:
                 time.sleep(1)
                 st.rerun()
                 
-        # 🔥 PANEL DE RECUPERACIÓN PARA EL ADMIN (NUEVO)
         st.markdown("---")
         st.markdown("<h3 style='color: #60A5FA;'>🕵️‍♂️ Panel de Recuperación y Respaldo</h3>", unsafe_allow_html=True)
         
@@ -860,7 +881,6 @@ with tab5:
         with col_admin2:
             st.markdown("#### 🔐 PIN de Jugadores")
             if not df_predicciones.empty:
-                # Eliminamos la columna temporal usuario_norm si por alguna razón se coló
                 df_pines = df_predicciones.copy()
                 if 'usuario_norm' in df_pines.columns:
                     df_pines = df_pines.drop(columns=['usuario_norm'])
