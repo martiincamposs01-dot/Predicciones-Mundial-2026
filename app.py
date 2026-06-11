@@ -225,9 +225,10 @@ BANNED_WORDS = [
 ]
 
 def normalizar_nombre(nombre):
-    """Limpia el nombre de tildes y mayúsculas para evitar cuentas duplicadas."""
+    """Limpia el nombre de tildes y mayúsculas para evitar problemas de duplicados accidentales."""
     if not isinstance(nombre, str) or not nombre:
         return ""
+    # Quitar tildes y dejar todo limpio
     nombre_limpio = ''.join((c for c in unicodedata.normalize('NFD', nombre) if unicodedata.category(c) != 'Mn'))
     return nombre_limpio.strip().title()
 
@@ -240,7 +241,7 @@ PARTIDOS_FILE = "mundial_partidos_oficial_2026.csv"
 PREDICCONES_FILE = "mundial_preds_oficial_2026.csv"
 LIGAS_FILE = "mundial_ligas_oficial_2026.csv" 
 
-# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -518,7 +519,7 @@ with tab1:
     col_u1, col_u2 = st.columns([2, 1])
     with col_u1:
         usuario_input = st.text_input("👤 INGRESA TU APODO:", placeholder="Ej. El Analista", max_chars=20, value=st.session_state.get("usuario_registrado", ""))
-        usuario_limpio = normalizar_nombre(usuario_input)
+        usuario_norm_input = normalizar_nombre(usuario_input)
     with col_u2:
         pin_input = st.text_input("🔑 PIN (Crea o ingresa tus 4 dígitos):", placeholder="Ej. 1234", type="password", max_chars=4, value=st.session_state.get("pin_registrado", ""))
     
@@ -547,20 +548,28 @@ with tab1:
 
     st.markdown("---")
     
-    # 🔥 LÓGICA DE SEGURIDAD (Baneos, Duplicados y PIN)
+    # 🔥 LÓGICA DE SEGURIDAD MÁXIMA (Baneos, Duplicados, PIN y Absorción de Tildes)
     bloquear_acceso = False
     
-    if not usuario_limpio or not pin_input:
+    if not usuario_norm_input or not pin_input:
         st.info("👆 Escribe tu Apodo, un PIN de 4 dígitos y selecciona tu liga para empezar a predecir.")
         bloquear_acceso = True
     else:
-        es_baneado = contiene_palabras_baneadas(usuario_limpio)
-        pred_usuario_liga = df_predicciones[(df_predicciones["usuario"] == usuario_limpio) & (df_predicciones["liga"] == liga_limpia)]
+        es_baneado = contiene_palabras_baneadas(usuario_norm_input)
+        
+        # FIX MAESTRO: Normalizar la columna de la base de datos solo para la búsqueda
+        df_predicciones['usuario_norm'] = df_predicciones['usuario'].apply(normalizar_nombre)
+        pred_usuario_liga = df_predicciones[(df_predicciones['usuario_norm'] == usuario_norm_input) & (df_predicciones['liga'] == liga_limpia)]
+        
         ya_registrado = not pred_usuario_liga.empty
         
         pin_correcto = False
+        usuario_oficial = usuario_input.strip().title() # Por defecto es como lo escribió ahora (con Mayúscula inicial)
+
         if ya_registrado:
-            pin_guardado = str(pred_usuario_liga.iloc[0]["pin_jugador"])
+            # Si el usuario ya existe, absorbemos su nombre EXACTO de la base de datos (Ej: "Martín Campos" con tilde)
+            usuario_oficial = pred_usuario_liga.iloc[0]['usuario'] 
+            pin_guardado = str(pred_usuario_liga.iloc[0]['pin_jugador'])
             if str(pin_input) == pin_guardado:
                 pin_correcto = True
 
@@ -568,10 +577,10 @@ with tab1:
             st.error("🚨 ¡Epa! Ese apodo contiene palabras no permitidas. Por favor, usa otro.")
             bloquear_acceso = True
         elif ya_registrado and not pin_correcto:
-            st.error(f"🚨 ¡NOMBRE OCUPADO O PIN INCORRECTO! El apodo '{usuario_limpio}' ya está registrado en '{liga_limpia}'. Ingresa tu PIN correcto para continuar o elige otro nombre.")
+            st.error(f"🚨 ¡PIN INCORRECTO O NOMBRE OCUPADO! El apodo '{usuario_oficial}' ya está registrado en '{liga_limpia}'. Ingresa tu PIN correcto para continuar o elige otro nombre.")
             bloquear_acceso = True
         elif ya_registrado and pin_correcto:
-            st.success(f"👋 ¡Bienvenido de vuelta, {usuario_limpio}! Ya puedes agregar las predicciones que te falten.")
+            st.success(f"👋 ¡Bienvenido de vuelta, {usuario_oficial}! Ya puedes agregar las predicciones que te falten.")
             bloquear_acceso = False
         else:
             st.success(f"✅ ¡Nuevo jugador listo! Guarda bien tu PIN ({pin_input}) para poder volver mañana a esta misma liga.")
@@ -594,7 +603,8 @@ with tab1:
                 with st.form(f"form_{fecha}"):
                     for _, row in partidos_dia.iterrows():
                         p_id_f = int(row["id"])
-                        pred_existente = df_predicciones[(df_predicciones["usuario"] == usuario_limpio) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_f)]
+                        # Buscamos con el nombre oficial de la base de datos
+                        pred_existente = df_predicciones[(df_predicciones["usuario"] == usuario_oficial) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_f)]
                         
                         ya_predijo = not pred_existente.empty
                         
@@ -645,11 +655,11 @@ with tab1:
                             else:
                                 liga_existente = df_ligas[df_ligas["nombre_liga"] == liga_limpia]
                                 if not liga_existente.empty:
-                                    if str(liga_existente.iloc[0]["creador"]) != usuario_limpio:
+                                    if str(liga_existente.iloc[0]["creador"]) != usuario_oficial:
                                         st.error("❌ Ese nombre de liga ya existe y pertenece a otro usuario. Elige otro.")
                                         acceso = False
                                 else:
-                                    df_ligas = pd.concat([df_ligas, pd.DataFrame([{"nombre_liga": liga_limpia, "clave_liga": clave_creada, "creador": usuario_limpio}])], ignore_index=True)
+                                    df_ligas = pd.concat([df_ligas, pd.DataFrame([{"nombre_liga": liga_limpia, "clave_liga": clave_creada, "creador": usuario_oficial}])], ignore_index=True)
                                     df_ligas.to_csv(LIGAS_FILE, index=False)
                         elif opcion_liga == "🔐 Unirse a Liga Existente" and ligas_disp:
                             if str(clave_ingresada) != str(df_ligas[df_ligas["nombre_liga"] == liga_limpia]["clave_liga"].values[0]):
@@ -662,21 +672,25 @@ with tab1:
                                 if row["jugado"]: continue
                                 
                                 # 🔥 SOLO GUARDAR SI NO ESTABA PREDICHO ANTES (Evita modificar bloqueados)
-                                pred_existente_db = df_predicciones[(df_predicciones["usuario"] == usuario_limpio) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_s)]
+                                pred_existente_db = df_predicciones[(df_predicciones["usuario"] == usuario_oficial) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_s)]
                                 if not pred_existente_db.empty: continue 
                                 
                                 g_l_v = st.session_state[f"l_{p_id_s}"]
                                 g_v_v = st.session_state[f"v_{p_id_s}"]
                                 
-                                nueva_p = {"usuario": usuario_limpio, "liga": liga_limpia, "partido_id": p_id_s, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v), "pin_jugador": str(pin_input)}
+                                nueva_p = {"usuario": usuario_oficial, "liga": liga_limpia, "partido_id": p_id_s, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v), "pin_jugador": str(pin_input)}
                                 df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
                                 nuevas_predicciones += 1
                             
                             if nuevas_predicciones > 0:
+                                # Eliminamos la columna temporal usuario_norm si existe antes de guardar (por seguridad)
+                                if 'usuario_norm' in df_predicciones.columns:
+                                    df_predicciones = df_predicciones.drop(columns=['usuario_norm'])
+                                    
                                 df_predicciones.to_csv(PREDICCONES_FILE, index=False)
                                 
                                 # 🔥 MEMORIA DE SESIÓN (UX)
-                                st.session_state["usuario_registrado"] = usuario_limpio
+                                st.session_state["usuario_registrado"] = usuario_oficial
                                 st.session_state["pin_registrado"] = pin_input
                                 st.session_state["saved_opcion"] = opcion_liga
                                 st.session_state["saved_liga"] = liga_nueva if opcion_liga == "➕ Crear Liga Privada" else liga_limpia
@@ -811,6 +825,6 @@ with tab5:
 # --- PIE DE PÁGINA ---
 st.markdown("""
 <div style="text-align: center; margin-top: 60px; padding: 25px; border-top: 1px solid #1e293b;">
-    <p style="color: #94a3b8; font-size: 1.1rem; font-weight:600;">Mundial 2026 Predictions © 2026</p>
+    <p style="color: #94a3b8; font-size: 1.1rem; font-weight:600;">Mundial 2026 Predictions © 2026 | Desarrollado por <a href="https://tiktok.com/@martincampos.mma" target="_blank" style="color:#3B82F6; text-decoration:none; font-family:'Bebas Neue', sans-serif; font-size:1.8rem; letter-spacing:1px;">@martincampos.mma</a></p>
 </div>
 """, unsafe_allow_html=True)
