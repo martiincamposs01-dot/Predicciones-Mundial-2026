@@ -27,7 +27,7 @@ st.markdown("""
 }
 
 /* Tipografías Especiales */
-h1, h2, h3, .team-name, .vs-text, .weight-class, .stat-title { 
+h1, h2, h3, .team-name, .vs-text, .weight-class, .stat-title, .stadium-tag { 
     font-family: 'Bebas Neue', sans-serif !important; 
     letter-spacing: 1.5px;
 }
@@ -208,7 +208,7 @@ button[data-baseweb="tab"]:hover {
 """, unsafe_allow_html=True)
 
 # --- 🔒 SISTEMA DE SEGURIDAD Y MODERACIÓN BLINDADO ---
-PASSWORD_ADMIN = "MundialAdmin_26!"
+PASSWORD_ADMIN = "Cokemma_VAR26!"
 
 BANNED_WORDS = [
     # Generales y contenido explícito
@@ -440,7 +440,7 @@ with tab0:
 </div>
     """, unsafe_allow_html=True)
 
-    # 🔥 SECCIÓN VISUAL DE LOS GRUPOS OFICIALES (IMAGEN SOLICITADA)
+    # 🔥 SECCIÓN VISUAL DE LOS GRUPOS OFICIALES
     st.markdown("<h2 style='text-align: center; color: #3B82F6; text-transform: uppercase;'>🏆 FASE DE GRUPOS OFICIAL</h2>", unsafe_allow_html=True)
     st.markdown(f"""
     <div style='text-align: center; margin-bottom: 30px;'>
@@ -448,7 +448,7 @@ with tab0:
     </div>
     """, unsafe_allow_html=True)
     
-    # 🔥 REGLAS DE PUNTUACIÓN (EN EL LOBBY)
+    # 🔥 REGLAS DE PUNTUACIÓN
     st.markdown("""
 <div class="custom-box">
     <h2 style="color: #3B82F6; margin-top: 0; font-size: 2.8rem;">📜 REGLAS DE PUNTUACIÓN</h2>
@@ -564,7 +564,6 @@ with tab1:
                             l_name, l_flag = parse_team(row['local'])
                             v_name, v_flag = parse_team(row['visita'])
 
-                            # Se eliminó la etiqueta del estadio
                             html_tarjeta = f"""
                             <div class='match-card'>
                                 <div class='group-class'>{row['grupo']}</div>
@@ -596,7 +595,7 @@ with tab1:
                             with col2: st.number_input(f"Goles {v_name}", min_value=0, max_value=15, value=val_v, step=1, key=f"v_{p_id_f}", disabled=esta_bloqueado)
                             st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
                             
-                        # Botón Submit POR DÍA (Se deshabilita si todos están jugados para evitar confusiones)
+                        # Botón Submit POR DÍA
                         if st.form_submit_button(f"🔒 GUARDAR PRONÓSTICOS: {fecha}", disabled=todos_jugados):
                             acceso = True
                             
