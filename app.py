@@ -214,10 +214,15 @@ PASSWORD_ADMIN = "MundialAdmin_26!"
 BANNED_WORDS = [
     # Generales y contenido explícito
     "puta", "puto", "mierda", "pene", "verga", "pito", "culo", "zorra", 
-    "cabron", "maricon", "porno", "sexo", "conchetumare", "weon", "aweonao", 
-    "culiao", "ctm", "nazi", "hitler", "epstein", "charlie klirck", 
-    "charlie kirk", "klirck", "narco", "chapo", "escobar", "mencho", 
-    "cartel", "pendejo", "pinche", "chinga", "joto", "puñetas", "culero", "mamada"
+    "cabron", "maricon", "porno", "sexo",
+    # Chilenismos
+    "conchetumare", "weon", "aweonao", "culiao", "ctm", 
+    # Temas sensibles, nombres y política
+    "nazi", "hitler", "epstein", "charlie klirck", "charlie kirk", "klirck",
+    # Cultura Narco
+    "narco", "chapo", "escobar", "mencho", "cartel",
+    # Mexicanismos baneables
+    "pendejo", "pinche", "chinga", "chinga tu madre", "joto", "puñetas", "culero", "mamada"
 ]
 
 def contiene_palabras_baneadas(texto):
@@ -380,7 +385,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
     
-    # 📱 TIKTOK BADGE (UFC Style Cyan/Magenta)
+    # 📱 TIKTOK BADGE
     st.markdown("""
     <div style="text-align:center; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);">
         <p style="color: #000; font-weight: 800; margin: 0; font-size: 0.9rem; text-transform: uppercase;">Desarrollador Oficial</p>
@@ -418,13 +423,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE ---
-tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "🏆 RÁNKINGS", "📝 PREDICCIONES ⚽", "📺 EL VAR", "🔒 ÁRBITRO"])
+# --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE (CORREGIDO PARA EVITAR VALUEERROR) ---
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "🏆 RÁNKINGS", "📝 PREDICCIONES ⚽", "ℹ️ INFO", "📺 EL VAR", "🔒 ÁRBITRO"])
 
 # --- PESTAÑA 0: LOBBY REORGANIZADO ---
 with tab0:
     
-    # 🔥 SECCIÓN DE COMPARTIR (UFC Style)
+    # 🔥 SECCIÓN DE COMPARTIR
     url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote('🏆 ¡Únete a la liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: ' + URL_APP_MUNDIAL)}"
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #10B981 0%, #047857 100%); padding: 2px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
@@ -692,8 +697,16 @@ with tab2:
                                 time.sleep(2)
                                 st.rerun()
 
-# --- PESTAÑA 3: EL VAR (STATS) ---
+# --- PESTAÑA 3: INFO ---
 with tab3:
+    st.header("ℹ️ Información del Torneo")
+    st.subheader("⏱️ Avance del Torneo")
+    jugados = len(df_partidos[df_partidos["jugado"] == True])
+    st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
+    st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
+
+# --- PESTAÑA 4: EL VAR (STATS) ---
+with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #10B981;">
         <h1 style="color: #10B981; margin:0; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif; font-size: 4rem;">📺 Sala del VAR</h1>
@@ -714,8 +727,8 @@ with tab3:
         chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
         st.bar_chart(chart_data, color="#10B981")
 
-# --- PESTAÑA 4: ADMIN ---
-with tab4:
+# --- PESTAÑA 5: ADMIN ---
+with tab5:
     st.markdown("<h2 style='color: #DC2626; font-size: 3.5rem;'>🔒 CAMARÍN DEL ÁRBITRO (OFFICIALS ONLY)</h2>", unsafe_allow_html=True)
     if st.text_input("Ingresa la credencial de acceso:", type="password") == PASSWORD_ADMIN:
         with st.form("admin_form"):
