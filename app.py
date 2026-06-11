@@ -198,7 +198,7 @@ button[data-baseweb="tab"]:hover {
     .team-name { font-size: 1.5rem; }
     .vs-text { font-size: 2.5rem; margin-top: 30px; }
     .match-card { padding: 20px 10px; }
-    button[data-baseweb="tab"] { font-size: 1.1rem !important; padding: 10px 5px !important; }
+    button[data-baseweb="tab"] { font-size: 1rem !important; padding: 10px 5px !important; }
     .banner-container { min-height: 280px; background-position: center center; justify-content: flex-end; padding-bottom: 20px; }
     .banner-h1 { font-size: 4rem !important; }
     .banner-h2 { font-size: 1.5rem !important; }
@@ -211,24 +211,17 @@ button[data-baseweb="tab"]:hover {
 PASSWORD_ADMIN = "Cokemma_VAR26!"
 
 BANNED_WORDS = [
-    # Generales y contenido explícito
     "puta", "puto", "mierda", "pene", "verga", "pito", "culo", "zorra", 
-    "cabron", "maricon", "porno", "sexo",
-    # Chilenismos
-    "conchetumare", "weon", "aweonao", "culiao", "ctm", 
-    # Temas sensibles, nombres y política
-    "nazi", "hitler", "epstein", "charlie klirck", "charlie kirk", "klirck",
-    # Cultura Narco
-    "narco", "chapo", "escobar", "mencho", "cartel",
-    # Mexicanismos baneables
-    "pendejo", "pinche", "chinga", "chinga tu madre", "joto", "puñetas", "culero", "mamada"
+    "cabron", "maricon", "porno", "sexo", "conchetumare", "weon", "aweonao", 
+    "culiao", "ctm", "nazi", "hitler", "epstein", "charlie klirck", 
+    "charlie kirk", "klirck", "narco", "chapo", "escobar", "mencho", 
+    "cartel", "pendejo", "pinche", "chinga", "joto", "puñetas", "culero", "mamada"
 ]
 
 def normalizar_nombre(nombre):
     """Limpia el nombre de tildes y mayúsculas para evitar problemas de duplicados accidentales."""
     if not isinstance(nombre, str) or not nombre:
         return ""
-    # Quitar tildes y dejar todo limpio
     nombre_limpio = ''.join((c for c in unicodedata.normalize('NFD', nombre) if unicodedata.category(c) != 'Mn'))
     return nombre_limpio.strip().title()
 
@@ -335,6 +328,7 @@ if "pin_jugador" not in df_predicciones.columns:
 df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str)
 
 df_ligas = pd.read_csv(LIGAS_FILE)
+df_ligas["clave_liga"] = df_ligas["clave_liga"].astype(str).str.strip() # Evita errores de tipo al leer la contraseña
 lista_fechas = df_partidos["fecha"].unique()
 
 # --- FUNCIONES AUXILIARES ---
@@ -405,12 +399,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE (PREDICCIONES PRIMERO) ---
-tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "📝 PREDICCIONES ⚽", "🏆 RÁNKINGS", "ℹ️ INFO", "📺 EL VAR", "🔒 ÁRBITRO"])
+# --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE CON LA NUEVA PESTAÑA DE RESULTADOS ---
+tab0, tab1, tab2, tab_res, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "📝 PREDICCIONES ⚽", "🏆 RÁNKINGS", "✅ RESULTADOS", "ℹ️ INFO", "📺 EL VAR", "🔒 ÁRBITRO"])
 
 # --- PESTAÑA 0: LOBBY REORGANIZADO ---
 with tab0:
-    
     # 🔥 SECCIÓN DE COMPARTIR TRICOLOR
     url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote('🏆 ¡Únete a la liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: ' + URL_APP_MUNDIAL)}"
     st.markdown(f"""
@@ -464,7 +457,7 @@ with tab0:
     </div>
     """, unsafe_allow_html=True)
     
-    # 🔥 REGLAS DE PUNTUACIÓN (EN EL LOBBY)
+    # 🔥 REGLAS DE PUNTUACIÓN
     st.markdown("""
 <div class="custom-box">
     <h2 style="color: #3B82F6; margin-top: 0; font-size: 2.8rem;">📜 REGLAS DE PUNTUACIÓN</h2>
@@ -498,7 +491,7 @@ with tab0:
     else:
         st.info("Aún no hay ligas privadas creadas. Ve a la pestaña 'PREDICCIONES' y sé el primero.")
 
-# --- PESTAÑA 1: PREDICCIONES (PRIORIDAD, PIN DE SEGURIDAD, BLOQUEO DE PREDICCIONES) ---
+# --- PESTAÑA 1: PREDICCIONES ---
 with tab1:
     st.markdown("<h2 style='color: #ffffff; text-align:center; font-size: 3.5rem;'>📝 TUS PRONÓSTICOS</h2>", unsafe_allow_html=True)
     
@@ -564,13 +557,13 @@ with tab1:
         ya_registrado = not pred_usuario_liga.empty
         
         pin_correcto = False
-        usuario_oficial = usuario_input.strip().title() # Por defecto es como lo escribió ahora (con Mayúscula inicial)
+        usuario_oficial = usuario_input.strip().title() # Por defecto es como lo escribió ahora
 
         if ya_registrado:
-            # Si el usuario ya existe, absorbemos su nombre EXACTO de la base de datos (Ej: "Martín Campos" con tilde)
+            # Si el usuario ya existe, absorbemos su nombre EXACTO de la base de datos
             usuario_oficial = pred_usuario_liga.iloc[0]['usuario'] 
-            pin_guardado = str(pred_usuario_liga.iloc[0]['pin_jugador'])
-            if str(pin_input) == pin_guardado:
+            pin_guardado = str(pred_usuario_liga.iloc[0]['pin_jugador']).strip()
+            if str(pin_input).strip() == pin_guardado:
                 pin_correcto = True
 
         if es_baneado:
@@ -653,17 +646,20 @@ with tab1:
                         if opcion_liga == "➕ Crear Liga Privada":
                             if not liga_nueva or not clave_creada: st.error("Faltan datos de la liga."); acceso = False
                             else:
+                                clave_creada_limpia = str(clave_creada).strip()
                                 liga_existente = df_ligas[df_ligas["nombre_liga"] == liga_limpia]
                                 if not liga_existente.empty:
                                     if str(liga_existente.iloc[0]["creador"]) != usuario_oficial:
                                         st.error("❌ Ese nombre de liga ya existe y pertenece a otro usuario. Elige otro.")
                                         acceso = False
                                 else:
-                                    df_ligas = pd.concat([df_ligas, pd.DataFrame([{"nombre_liga": liga_limpia, "clave_liga": clave_creada, "creador": usuario_oficial}])], ignore_index=True)
+                                    df_ligas = pd.concat([df_ligas, pd.DataFrame([{"nombre_liga": liga_limpia, "clave_liga": clave_creada_limpia, "creador": usuario_oficial}])], ignore_index=True)
                                     df_ligas.to_csv(LIGAS_FILE, index=False)
                         elif opcion_liga == "🔐 Unirse a Liga Existente" and ligas_disp:
-                            if str(clave_ingresada) != str(df_ligas[df_ligas["nombre_liga"] == liga_limpia]["clave_liga"].values[0]):
-                                st.error("Contraseña incorrecta."); acceso = False
+                            clave_db = str(df_ligas[df_ligas["nombre_liga"] == liga_limpia]["clave_liga"].values[0]).strip()
+                            if str(clave_ingresada).strip() != clave_db:
+                                st.error("❌ Contraseña incorrecta. Revisa si se coló un espacio en blanco al final de la palabra.")
+                                acceso = False
 
                         if acceso:
                             nuevas_predicciones = 0
@@ -671,19 +667,18 @@ with tab1:
                                 p_id_s = int(row["id"])
                                 if row["jugado"]: continue
                                 
-                                # 🔥 SOLO GUARDAR SI NO ESTABA PREDICHO ANTES (Evita modificar bloqueados)
+                                # 🔥 SOLO GUARDAR SI NO ESTABA PREDICHO ANTES
                                 pred_existente_db = df_predicciones[(df_predicciones["usuario"] == usuario_oficial) & (df_predicciones["liga"] == liga_limpia) & (df_predicciones["partido_id"] == p_id_s)]
                                 if not pred_existente_db.empty: continue 
                                 
                                 g_l_v = st.session_state[f"l_{p_id_s}"]
                                 g_v_v = st.session_state[f"v_{p_id_s}"]
                                 
-                                nueva_p = {"usuario": usuario_oficial, "liga": liga_limpia, "partido_id": p_id_s, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v), "pin_jugador": str(pin_input)}
+                                nueva_p = {"usuario": usuario_oficial, "liga": liga_limpia, "partido_id": p_id_s, "goles_l_pred": int(g_l_v), "goles_v_pred": int(g_v_v), "pin_jugador": str(pin_input).strip()}
                                 df_predicciones = pd.concat([df_predicciones, pd.DataFrame([nueva_p])], ignore_index=True)
                                 nuevas_predicciones += 1
                             
                             if nuevas_predicciones > 0:
-                                # Eliminamos la columna temporal usuario_norm si existe antes de guardar (por seguridad)
                                 if 'usuario_norm' in df_predicciones.columns:
                                     df_predicciones = df_predicciones.drop(columns=['usuario_norm'])
                                     
@@ -721,14 +716,12 @@ with tab2:
     with col_filtro1:
         liga_busqueda = st.selectbox("🔍 Filtrar por Liga:", opciones_ligas).strip().upper()
     with col_filtro2:
-        # Se normaliza la búsqueda para que no importen las tildes al buscar
         busqueda_input = st.text_input("🔍 Buscar mi apodo:")
         busqueda_usuario = normalizar_nombre(busqueda_input)
     
     df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
     
     if busqueda_usuario:
-        # Hacemos una búsqueda que normalice todo en memoria rápida (ignorando tildes)
         df_ranking["Participante_Norm"] = df_ranking["Participante"].apply(normalizar_nombre)
         df_ranking = df_ranking[df_ranking["Participante_Norm"].str.contains(busqueda_usuario, case=False, na=False)]
         df_ranking = df_ranking.drop(columns=["Participante_Norm"])
@@ -747,7 +740,33 @@ with tab2:
     else: 
         st.info("Aún no hay predictores registrados o no se encontraron resultados.")
 
-# --- PESTAÑA 3: INFO (Estadísticas Reales Añadidas) ---
+# --- PESTAÑA NUEVA: RESULTADOS OFICIALES ---
+with tab_res:
+    st.markdown("<h2 style='color: #ffffff; text-align:center; font-size: 3.5rem;'>✅ RESULTADOS OFICIALES</h2>", unsafe_allow_html=True)
+    
+    partidos_jugados = df_partidos[df_partidos["jugado"] == True]
+    
+    if partidos_jugados.empty:
+        st.info("⏱️ Aún no hay partidos finalizados en el torneo. ¡El balón está por rodar!")
+    else:
+        for fecha in partidos_jugados["fecha"].unique():
+            st.markdown(f"<h3 style='color: #60A5FA; margin-top: 25px; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px;'>🗓️ {fecha}</h3>", unsafe_allow_html=True)
+            partidos_dia = partidos_jugados[partidos_jugados["fecha"] == fecha]
+            for _, row in partidos_dia.iterrows():
+                l_name, l_flag = parse_team(row['local'])
+                v_name, v_flag = parse_team(row['visita'])
+                gl = row['goles_l_real']
+                gv = row['goles_v_real']
+                
+                st.markdown(f"""
+                <div style='background-color:#0f172a; padding:15px; border-radius:12px; margin-bottom:15px; border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; justify-content: space-between; align-items: center;'>
+                    <div style='width: 40%; text-align: right;'><span style='font-size:1.6rem; font-family: "Bebas Neue", sans-serif; color: white; letter-spacing: 1px;'>{l_name}</span> <span style='font-size:2rem;'>{l_flag}</span></div>
+                    <div style='width: 20%; text-align: center;'><span style='font-size:2.2rem; font-weight:900; color:#10B981; background-color:#1e293b; padding: 5px 20px; border-radius:8px; font-family: "Bebas Neue", sans-serif;'>{gl} - {gv}</span></div>
+                    <div style='width: 40%; text-align: left;'><span style='font-size:2rem;'>{v_flag}</span> <span style='font-size:1.6rem; font-family: "Bebas Neue", sans-serif; color: white; letter-spacing: 1px;'>{v_name}</span></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+# --- PESTAÑA 3: INFO ---
 with tab3:
     st.header("ℹ️ Información del Torneo")
     st.markdown("""
