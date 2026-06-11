@@ -5,14 +5,16 @@ import time
 import urllib.parse
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mundial 2026 | Predicciones", page_icon="🏆", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Mundial 2026 | Predicciones Community", page_icon="🏆", layout="wide", initial_sidebar_state="collapsed")
 
 # --- 📸 DICCIONARIO DE IMÁGENES Y DATOS OFICIALES ---
 URL_APP_MUNDIAL = "https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app"
-URL_NOTICIA_GRUPOS = "https://notivisiongeorgia.com/2025/12/05/asi-quedaron-los-grupos-de-la-copa-mundial-2026/"
-BANNER_PRINCIPAL = "https://images.unsplash.com/photo-1518605368461-1e1e38ce8058?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80"
+# ⚽ IMAGEN DE FASE DE GRUPOS SOLICITADA
+IMG_FASE_GRUPOS = "https://i0.wp.com/notivisiongeorgia.com/wp-content/uploads/2025/12/Untitled-design-19.png?fit=1080%2C730&ssl=1"
+# 🔥 BANNER PRINCIPAL SOLICITADO
+BANNER_PRINCIPAL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4U1dDTlr3I-AYiH1mtIXlS6H4Jv0FmkwyTOzfknIBCw&s=10"
 
-# --- ESTILOS CSS (DISEÑO PREMIUM OPTIMIZADO PARA PC Y CELULAR) ---
+# --- ESTILOS CSS (DISEÑO PREMIUM MUNDIAL - UFC STYLE ADAPTADO) ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;800&display=swap');
@@ -35,7 +37,7 @@ h1, h2, h3, .team-name, .vs-text, .weight-class, .stat-title {
 header {visibility: hidden;}
 footer {visibility: hidden;}
 
-/* Ticker Estilo Deportivo */
+/* Ticker Estilo Deportivo (Verde Mundial) */
 .ticker-wrap { 
     width: 100%; 
     background-color: #10B981; 
@@ -88,7 +90,7 @@ button[data-baseweb="tab"]:hover {
     color: #ffffff !important;
 }
 
-/* Botones de Acción */
+/* Botones de Acción (Guardado Día a Día) */
 .stButton > button {
     background: linear-gradient(90deg, #10B981 0%, #059669 100%); 
     color: #ffffff; 
@@ -118,41 +120,7 @@ button[data-baseweb="tab"]:hover {
     margin-bottom: 15px; 
 }
 
-/* Tarjetas de Noticias Web */
-.news-card {
-    display: block;
-    background-size: cover;
-    background-position: center;
-    height: 250px;
-    border-radius: 12px;
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-    border: 2px solid #333;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-.news-card:hover {
-    transform: translateY(-5px);
-    border-color: #10B981;
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-}
-.news-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,1), transparent);
-    padding: 30px 15px 15px 15px;
-}
-.news-title {
-    color: white;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    margin: 0;
-    text-shadow: 2px 2px 5px black;
-    letter-spacing: 1px;
-}
-
-/* Tarjetas de Partido (Adaptadas de la UFC) */
+/* Tarjetas de Partido (UFC Style ADAPTADO) */
 .fight-card { 
     background: rgba(26, 26, 26, 0.8); 
     backdrop-filter: blur(10px);
@@ -204,10 +172,10 @@ button[data-baseweb="tab"]:hover {
     font-family: 'Montserrat', sans-serif !important; font-size: 1.1rem !important;
 }
 
-/* 🥊 BANNER ENCUADRE TOP 🥊 */
+/* 🥊 BANNER ENCUADRE TOP PREMIUM 🥊 */
 .banner-container {
     background-size: cover; 
-    background-position: center 30%; 
+    background-position: center top; 
     min-height: 520px; 
     display: flex; 
     flex-direction: column; 
@@ -218,6 +186,11 @@ button[data-baseweb="tab"]:hover {
     margin-bottom: 25px; 
     border: 2px solid #333; 
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+.banner-container::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, #050505, transparent); border-radius: 14px;
 }
 
 /* Responsivo para celulares */
@@ -227,7 +200,7 @@ button[data-baseweb="tab"]:hover {
     .weight-class { font-size: 0.9rem; }
     .fight-card { padding: 15px; }
     button[data-baseweb="tab"] { font-size: 1.1rem !important; padding: 10px 5px !important; }
-    .banner-container { min-height: 300px; background-position: top center; justify-content: flex-end; padding-bottom: 20px; }
+    .banner-container { min-height: 300px; background-position: center center; justify-content: flex-end; padding-bottom: 20px; }
     .banner-h1 { font-size: 4.5rem !important; }
     .banner-h2 { font-size: 1.8rem !important; }
     .stNumberInput > div > div > input { font-size: 2rem !important; }
@@ -235,21 +208,16 @@ button[data-baseweb="tab"]:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# --- 🔒 SISTEMA DE SEGURIDAD Y MODERACIÓN ---
+# --- 🔒 SISTEMA DE SEGURIDAD Y MODERACIÓN BLINDADO ---
 PASSWORD_ADMIN = "MundialAdmin_26!"
 
 BANNED_WORDS = [
     # Generales y contenido explícito
     "puta", "puto", "mierda", "pene", "verga", "pito", "culo", "zorra", 
-    "cabron", "maricon", "porno", "sexo",
-    # Chilenismos
-    "conchetumare", "weon", "aweonao", "culiao", "ctm", 
-    # Temas sensibles, nombres y política
-    "nazi", "hitler", "epstein", "charlie klirck", "charlie kirk", "klirck",
-    # Cultura Narco
-    "narco", "chapo", "escobar", "mencho", "cartel",
-    # Mexicanismos baneables
-    "pendejo", "pinche", "chinga", "chinga tu madre", "joto", "puñetas", "culero", "mamada"
+    "cabron", "maricon", "porno", "sexo", "conchetumare", "weon", "aweonao", 
+    "culiao", "ctm", "nazi", "hitler", "epstein", "charlie klirck", 
+    "charlie kirk", "klirck", "narco", "chapo", "escobar", "mencho", 
+    "cartel", "pendejo", "pinche", "chinga", "joto", "puñetas", "culero", "mamada"
 ]
 
 def contiene_palabras_baneadas(texto):
@@ -261,7 +229,7 @@ PARTIDOS_FILE = "mundial_partidos_oficial_2026.csv"
 PREDICCONES_FILE = "mundial_preds_oficial_2026.csv"
 LIGAS_FILE = "mundial_ligas_oficial_2026.csv" 
 
-# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS) ---
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -412,7 +380,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
     
-    # 📱 TIKTOK BADGE (UFC Style)
+    # 📱 TIKTOK BADGE (UFC Style Cyan/Magenta)
     st.markdown("""
     <div style="text-align:center; padding: 15px; border-radius: 12px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);">
         <p style="color: #000; font-weight: 800; margin: 0; font-size: 0.9rem; text-transform: uppercase;">Desarrollador Oficial</p>
@@ -435,10 +403,9 @@ with st.sidebar:
         </style>
         """, unsafe_allow_html=True)
 
-# --- BANNER PRINCIPAL ANIMADO Y ÉPICO ---
+# --- BANNER PRINCIPAL ANIMADO Y ÉPICO (IMAGEN SOLICITADA) ---
 st.markdown(f"""
 <div class="banner-container" style="background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(5, 5, 5, 0.95) 100%), url('{BANNER_PRINCIPAL}');">
-    <h3 class="banner-sub" style="color: #10B981; margin:0; text-transform: uppercase; letter-spacing: 4px; font-family: 'Bebas Neue', sans-serif; text-shadow: 2px 2px 10px black; z-index: 2; font-size: 1.8rem;">⚽ PREDICCIONES DE LA COMUNIDAD</h3>
     <h1 class="banner-h1" style="color: #ffffff; font-size: 7rem; margin-top:10px; margin-bottom:0px; line-height: 1; text-transform: uppercase; letter-spacing: 6px; text-shadow: 4px 4px 15px rgba(16, 185, 129, 0.9); font-family: 'Bebas Neue', sans-serif; z-index: 2;">MUNDIAL <span style="color:#10B981;">2026</span></h1>
     <h2 class="banner-h2" style="color: #ffffff; font-size: 3.5rem; margin-top: 10px; font-weight: 400; letter-spacing: 4px; font-family: 'Bebas Neue', sans-serif; text-shadow: 2px 2px 10px black; z-index: 2;">🇺🇸 EEUU • 🇲🇽 MÉXICO • 🇨🇦 CANADÁ</h2>
 </div>
@@ -452,12 +419,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE ---
-tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "📝 PREDICCIONES ⚽", "🏆 RÁNKINGS", "ℹ️ REGLAS", "📺 EL VAR", "🔒 ÁRBITRO"])
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "🏆 RÁNKINGS", "📝 PREDICCIONES ⚽", "📺 EL VAR", "🔒 ÁRBITRO"])
 
-# --- PESTAÑA 0: LOBBY ---
+# --- PESTAÑA 0: LOBBY REORGANIZADO ---
 with tab0:
     
-    # 🔥 SECCIÓN DE COMPARTIR 
+    # 🔥 SECCIÓN DE COMPARTIR (UFC Style)
     url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote('🏆 ¡Únete a la liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: ' + URL_APP_MUNDIAL)}"
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #10B981 0%, #047857 100%); padding: 2px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
@@ -491,55 +458,94 @@ with tab0:
     st.code(URL_APP_MUNDIAL, language="text")
     st.markdown("<br><hr style='border-color: #333;'><br>", unsafe_allow_html=True)
 
-    # 🔥 CONTADOR DE PELEADORES (DTS)
-    total_peleadores = df_predicciones["usuario"].nunique() if not df_predicciones.empty else 0
-    st.markdown(f"""
-    <div style="background: linear-gradient(90deg, #10B981 0%, #047857 100%); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); border: 1px solid #34D399;">
-        <h2 style="color: white; margin: 0; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 2.2rem;">
-            ⚽ {total_peleadores} DIRECTOR TÉCNICOS YA ESTÁN EN LA CANCHA
-        </h2>
-    </div>
-    """, unsafe_allow_html=True)
-
+    # 🔥 BLOQUE DE INSTALACIÓN COMO APP (IMPORTANTE SOLICITADO)
     st.markdown("""
-    <div class="custom-box">
-        <h2 style="margin: 0; color: #10B981; font-size: 2.8rem;">¿CÓMO FUNCIONA ESTO? 🌍</h2>
-        <p style="font-size: 1.2rem; color: #e4e4e7; line-height: 1.6; margin-top: 10px;">
-            Esta es la <strong>Plataforma Oficial de Predicciones del Mundial 2026</strong>. Un espacio interactivo donde puedes predecir, competir y vivir la adrenalina de la copa. Crea tu liga privada con amigos o mídete en el Ranking Global.
-        </p>
-    </div>
+<div style="background: linear-gradient(135deg, #10B981 0%, #60EFFF 100%); color: #000000; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 255, 135, 0.4);">
+<h3 style="margin-top: 0; color: #000000; display: flex; align-items: center; font-weight: 900;">📲 ¡Lleva el Mundial en tu Bolsillo!</h3>
+<p style="font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">Instala esta web como una App nativa para no perderte nada:</p>
+<div style="background-color: rgba(0,0,0,0.8); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #60EFFF;">
+<span style="font-size: 0.95rem; color: #10B981; font-weight: bold; font-family: 'Montserrat', sans-serif;">⚠️ ¿Atrapado en el navegador de TikTok o Instagram?</span><br>
+<span style="font-size: 0.85rem; color: #fff; font-family: 'Montserrat', sans-serif;">Las redes sociales bloquean la instalación. Para solucionarlo:</span><br>
+<ol style="font-size: 0.85rem; color: #fff; margin-top: 5px; margin-bottom: 0; padding-left: 20px; font-family: 'Montserrat', sans-serif;">
+<li>Toca la barra superior blanca que dice <em>"Estás en..."</em> o busca los 3 puntitos.</li>
+<li>Copia el enlace de la página.</li>
+<li>Abre <strong>Safari</strong> (iPhone) o <strong>Chrome</strong> (Android) y pega el enlace ahí.</li>
+</ol>
+</div>
+<ul style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0; font-family: 'Montserrat', sans-serif;">
+<li><strong>🍏 Una vez en Safari:</strong> Toca 'Compartir' (📤) abajo ➔ <strong>➕ Agregar a inicio</strong>.</li>
+<li><strong>🤖 Una vez en Chrome:</strong> Toca los 3 puntos (⋮) arriba ➔ <strong>📱 Agregar a la pantalla principal</strong>.</li>
+</ul>
+</div>
     """, unsafe_allow_html=True)
 
-    # 📰 PORTADA DE NOTICIAS
-    st.markdown("<h2 style='color: #ffffff; margin-top:40px; margin-bottom: 25px; font-size: 3rem;'><span style='color:#10B981;'>📰</span> RUMBO AL MUNDIAL</h2>", unsafe_allow_html=True)
+    # 🔥 SECCIÓN VISUAL DE LOS GRUPOS OFICIALES (IMAGEN SOLICITADA)
+    st.markdown("<h2 style='text-align: center; color: #10B981; text-transform: uppercase;'>🏆 FASE DE GRUPOS OFICIAL</h2>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='text-align: center; margin-bottom: 30px;'>
+        <img src='{IMG_FASE_GRUPOS}' style='width: 100%; max-width: 800px; border-radius: 12px; border: 2px solid #10B981; box-shadow: 0 4px 10px rgba(16,185,129,0.3);'>
+    </div>
+    """, unsafe_allow_html=True)
     
-    col_n1, col_n2, col_n3 = st.columns(3)
-    with col_n1:
-        st.markdown(f"""
-        <a href="{URL_NOTICIA_GRUPOS}" target="_blank" class="news-card" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ea/Estadio_Azteca%2C_2015.jpg');">
-            <div class="news-overlay">
-                <p class="news-title">Así quedaron los grupos del Mundial</p>
-            </div>
-        </a>
-        """, unsafe_allow_html=True)
-    with col_n2:
-        st.markdown(f"""
-        <div class="news-card" style="background-image: url('https://images.unsplash.com/photo-1518605368461-1e1e38ce8058?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');">
-            <div class="news-overlay">
-                <p class="news-title">Los estadios que albergarán la Copa</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_n3:
-        st.markdown(f"""
-        <div class="news-card" style="background-image: url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');">
-            <div class="news-overlay">
-                <p class="news-title">Favoritos para levantar el trofeo</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    # 🔥 REGLAS DE PUNTUACIÓN (MOVIDAS AL LOBBY COMO SOLICITASTE)
+    st.markdown("""
+<div class="custom-box">
+    <h2 style="color: #10B981; margin-top: 0; font-size: 2.8rem;">📜 REGLAS DE PUNTUACIÓN</h2>
+    <ul style="color: #D1D5DB; font-size: 1.2rem; line-height: 1.8; font-family: 'Montserrat', sans-serif;">
+        <li><strong style="color: #10B981;">+3 Puntos (Pleno):</strong> ¡Le achuntaste al resultado exacto! (Ej: Predices 2-1 y termina 2-1).</li>
+        <li><strong style="color: #60EFFF;">+1 Punto (Tendencia):</strong> Le achuntaste al ganador o al empate, pero no a los goles exactos.</li>
+        <li><strong style="color: #F87171;">+0 Puntos:</strong> No le achuntaste a nada. Suerte para la próxima.</li>
+    </ul>
+</div>
+    """, unsafe_allow_html=True)
 
-# --- PESTAÑA 2: PREDICCIONES (CON SEGURIDAD Y GUARDADO POR DÍA) ---
+    # Título para el directorio
+    st.markdown("<h2 style='color: #ffffff; margin-top:40px; margin-bottom: 25px; font-size: 3rem;'>📋 DIRECTORIO DE LIGAS</h2>", unsafe_allow_html=True)
+    # Ticker de ligas
+    if not df_ligas.empty:
+        ligas_texto = " | ".join([f"🎟️ {row['nombre_liga']}" for _, row in df_ligas.iterrows()])
+        st.markdown(f"""
+        <div style="background-color: #111; color: #10B981; padding: 10px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 1rem; border: 1px solid #333;">
+            <marquee scrollamount="8">🔥 LIGAS PRIVADAS ACTIVAS: {ligas_texto}</marquee>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.info("Aún no hay ligas privadas creadas. Ve a la pestaña 'Jugar' y sé el primero.")
+
+# --- PESTAÑA 1: RÁNKINGS (UFC Style con Buscador y Scroll) ---
+with tab1:
+    st.markdown("<h2 style='color: #10B981; font-size: 3.5rem;'>🏅 TABLA DE POSICIONES OFICIAL</h2>", unsafe_allow_html=True)
+    
+    opciones_ligas = ["GLOBAL"]
+    if not df_ligas.empty: opciones_ligas.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
+    
+    # 🔥 BÚSQUEDA Y FILTRO
+    col_filtro1, col_filtro2 = st.columns(2)
+    with col_filtro1:
+        liga_busqueda = st.selectbox("🔍 Filtrar por Liga:", opciones_ligas).strip().upper()
+    with col_filtro2:
+        busqueda_usuario = st.text_input("🔍 Buscar mi apodo:")
+    
+    df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
+    
+    if busqueda_usuario:
+        df_ranking = df_ranking[df_ranking["Participante"].str.contains(busqueda_usuario, case=False, na=False)]
+        
+    if not df_ranking.empty: 
+        if len(df_ranking) >= 3 and not busqueda_usuario:
+            st.markdown("### 🏟️ El Podio Actual")
+            col1, col2, col3 = st.columns(3)
+            with col1: st.metric("🥇 1er Lugar", df_ranking.iloc[0]["Participante"], f"{df_ranking.iloc[0]['Puntos Totales']} pts")
+            with col2: st.metric("🥈 2do Lugar", df_ranking.iloc[1]["Participante"], f"{df_ranking.iloc[1]['Puntos Totales']} pts")
+            with col3: st.metric("🥉 3er Lugar", df_ranking.iloc[2]["Participante"], f"{df_ranking.iloc[2]['Puntos Totales']} pts")
+            st.markdown("---")
+        
+        # 🔥 SCROLL: height=400 limita la tabla para que no sea infinita
+        st.dataframe(df_ranking, use_container_width=True, hide_index=True, height=400)
+    else: 
+        st.info("Aún no hay predictores registrados o no se encontraron resultados.")
+
+# --- PESTAÑA 2: JUGAR (PREDICCIONES CON SEGURIDAD Y GUARDADO POR DÍA) ---
 with tab2:
     st.markdown("<h2 style='color: #ffffff; text-align:center; font-size: 3.5rem;'>📝 PREDICCIONES OFICIALES</h2>", unsafe_allow_html=True)
     
@@ -581,7 +587,7 @@ with tab2:
             
             # --- BOTÓN DE ALARDEAR (WHATSAPP) ---
             if acaba_de_guardar:
-                texto_wa = f"🏆 ¡Dejé mis pronósticos del Mundial 2026! 🔥 ¿Crees que sabes más de fútbol que yo? Entra al directo y supérame aquí: {URL_APP_MUNDIAL}"
+                texto_wa = f"🏆 ¡Sellé mi cartilla para el Mundial 2026! 🔥 ¿Crees que sabes más de fútbol que yo? Entra al directo y supérame aquí: {URL_APP_MUNDIAL}"
                 link_wa = f"https://api.whatsapp.com/send?text={urllib.parse.quote(texto_wa)}"
                 
                 st.markdown(f"""
@@ -594,9 +600,9 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
             
-            st.info("💡 **Guarda tus pronósticos por día.** Abre la fecha, ingresa tus resultados y presiona el botón Guardar.")
+            st.info("💡 **Guarda tus pronósticos por día.** Abre la fecha, ingresa tus resultados y presiona el botón Guardar que está justo debajo de esos partidos.")
             
-            # 🔥 GUARDADO INDEPENDIENTE POR DÍA CON FORMS SEPARADOS
+            # 🔥 GUARDADO INDEPENDIENTE POR DÍA CON FORMS SEPARADOS (SOLICITADO)
             for fecha in lista_fechas:
                 with st.expander(f"🗓️ {fecha}", expanded=False):
                     with st.form(f"form_{fecha}"):
@@ -686,60 +692,8 @@ with tab2:
                                 time.sleep(2)
                                 st.rerun()
 
-# --- PESTAÑA 3: RÁNKINGS ---
-with tab1:
-    st.markdown("<h2 style='color: #10B981; font-size: 3.5rem;'>🏅 TABLA DE POSICIONES OFICIAL</h2>", unsafe_allow_html=True)
-    
-    opciones_ligas = ["GLOBAL"]
-    if not df_ligas.empty: opciones_ligas.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
-    
-    # 🔥 BÚSQUEDA Y FILTRO
-    col_filtro1, col_filtro2 = st.columns(2)
-    with col_filtro1:
-        liga_busqueda = st.selectbox("🔍 Filtrar por Grupo (Liga):", opciones_ligas).strip().upper()
-    with col_filtro2:
-        busqueda_usuario = st.text_input("🔍 Buscar mi apodo:")
-    
-    df_ranking = calcular_tabla(df_partidos, df_predicciones, liga_busqueda)
-    
-    if busqueda_usuario:
-        df_ranking = df_ranking[df_ranking["Participante"].str.contains(busqueda_usuario, case=False, na=False)]
-        
-    if not df_ranking.empty: 
-        if len(df_ranking) >= 3 and not busqueda_usuario:
-            st.markdown("### 🏟️ El Podio Actual")
-            col1, col2, col3 = st.columns(3)
-            with col1: st.metric("🥇 1er Lugar", df_ranking.iloc[0]["Participante"], f"{df_ranking.iloc[0]['Puntos Totales']} pts")
-            with col2: st.metric("🥈 2do Lugar", df_ranking.iloc[1]["Participante"], f"{df_ranking.iloc[1]['Puntos Totales']} pts")
-            with col3: st.metric("🥉 3er Lugar", df_ranking.iloc[2]["Participante"], f"{df_ranking.iloc[2]['Puntos Totales']} pts")
-            st.markdown("---")
-        
-        # 🔥 SCROLL: height=400 limita la tabla para que no sea infinita
-        st.dataframe(df_ranking, use_container_width=True, hide_index=True, height=400)
-    else: 
-        st.info("Aún no hay predictores registrados o no se encontraron resultados.")
-
-# --- PESTAÑA 4: INFORMACIÓN ---
+# --- PESTAÑA 3: EL VAR (STATS) ---
 with tab3:
-    st.header("ℹ️ Información del Torneo")
-    st.markdown("""
-    <div class="custom-box">
-        <h2 style="color: #10B981; margin-top: 0;">📜 Reglas de Puntuación</h2>
-        <ul style="color: #D1D5DB; font-size: 1.1rem; line-height: 1.8; font-family: 'Montserrat', sans-serif;">
-            <li><strong style="color: #10B981;">3 Puntos (Pleno):</strong> ¡Le achuntaste al resultado exacto! (Ej: Predices 2-1 y termina 2-1).</li>
-            <li><strong style="color: #60EFFF;">1 Punto (Tendencia):</strong> Le achuntaste al ganador o al empate, pero no a los goles exactos.</li>
-            <li><strong style="color: #F87171;">0 Puntos:</strong> No le achuntaste a nada. Suerte para la próxima.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.subheader("⏱️ Avance del Torneo")
-    jugados = len(df_partidos[df_partidos["jugado"] == True])
-    st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
-    st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
-
-# --- PESTAÑA 5: EL VAR ---
-with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #10B981;">
         <h1 style="color: #10B981; margin:0; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif; font-size: 4rem;">📺 Sala del VAR</h1>
@@ -760,8 +714,8 @@ with tab4:
         chart_data = df_predicciones["Total_Goles_Predichos"].value_counts().sort_index()
         st.bar_chart(chart_data, color="#10B981")
 
-# --- PESTAÑA 6: ADMIN ---
-with tab5:
+# --- PESTAÑA 4: ADMIN ---
+with tab4:
     st.markdown("<h2 style='color: #DC2626; font-size: 3.5rem;'>🔒 CAMARÍN DEL ÁRBITRO (OFFICIALS ONLY)</h2>", unsafe_allow_html=True)
     if st.text_input("Ingresa la credencial de acceso:", type="password") == PASSWORD_ADMIN:
         with st.form("admin_form"):
