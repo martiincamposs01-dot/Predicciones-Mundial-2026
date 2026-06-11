@@ -10,7 +10,6 @@ st.set_page_config(page_title="Mundial 2026 | Predicciones Community", page_icon
 # --- 📸 DICCIONARIO DE IMÁGENES Y ENLACES ---
 URL_APP_MUNDIAL = "https://predicciones-mundial-2026-pxopsckekdy9nhzjum8yby.streamlit.app"
 IMG_FASE_GRUPOS = "https://i0.wp.com/notivisiongeorgia.com/wp-content/uploads/2025/12/Untitled-design-19.png?fit=1080%2C730&ssl=1"
-# 🔥 BANNER PRINCIPAL TRICOLOR (EEUU, MÉXICO, CANADÁ)
 BANNER_PRINCIPAL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4U1dDTlr3I-AYiH1mtIXlS6H4Jv0FmkwyTOzfknIBCw&s=10"
 
 # --- ESTILOS CSS (DISEÑO MUNDIALISTA TRICOLOR: AZUL, ROJO, VERDE) ---
@@ -233,7 +232,7 @@ PARTIDOS_FILE = "mundial_partidos_oficial_2026.csv"
 PREDICCONES_FILE = "mundial_preds_oficial_2026.csv"
 LIGAS_FILE = "mundial_ligas_oficial_2026.csv" 
 
-# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS COMPLETOS) ---
+# --- INICIALIZACIÓN DEL FIXTURE (72 PARTIDOS) ---
 if not os.path.exists(PARTIDOS_FILE):
     partidos_iniciales = [
         {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False},
@@ -440,7 +439,7 @@ with tab0:
 </div>
     """, unsafe_allow_html=True)
 
-    # 🔥 SECCIÓN VISUAL DE LOS GRUPOS OFICIALES
+    # 🔥 SECCIÓN VISUAL DE LOS GRUPOS OFICIALES (IMAGEN SOLICITADA)
     st.markdown("<h2 style='text-align: center; color: #3B82F6; text-transform: uppercase;'>🏆 FASE DE GRUPOS OFICIAL</h2>", unsafe_allow_html=True)
     st.markdown(f"""
     <div style='text-align: center; margin-bottom: 30px;'>
@@ -448,7 +447,7 @@ with tab0:
     </div>
     """, unsafe_allow_html=True)
     
-    # 🔥 REGLAS DE PUNTUACIÓN
+    # 🔥 REGLAS DE PUNTUACIÓN (EN EL LOBBY)
     st.markdown("""
 <div class="custom-box">
     <h2 style="color: #3B82F6; margin-top: 0; font-size: 2.8rem;">📜 REGLAS DE PUNTUACIÓN</h2>
@@ -482,28 +481,34 @@ with tab0:
     else:
         st.info("Aún no hay ligas privadas creadas. Ve a la pestaña 'PREDICCIONES' y sé el primero.")
 
-# --- PESTAÑA 1: PREDICCIONES (PRIORIDAD Y GUARDADO POR DÍA) ---
+# --- PESTAÑA 1: PREDICCIONES (PRIORIDAD, MEMORIA DE SESIÓN, GUARDADO POR DÍA) ---
 with tab1:
     st.markdown("<h2 style='color: #ffffff; text-align:center; font-size: 3.5rem;'>📝 TUS PRONÓSTICOS</h2>", unsafe_allow_html=True)
     
-    # 🔥 SEGURIDAD: LÍMITE DE CARACTERES EN EL APODO
-    usuario_input = st.text_input("👤 INGRESA TU APODO (Hazte Famoso):", placeholder="Ej. El Analista", max_chars=20)
+    # 🔥 SEGURIDAD Y UX: LÍMITE DE CARACTERES EN EL APODO Y MEMORIA DE SESIÓN
+    usuario_input = st.text_input("👤 INGRESA TU APODO (Hazte Famoso):", placeholder="Ej. El Analista", max_chars=20, value=st.session_state.get("usuario_registrado", ""))
     usuario_limpio = usuario_input.strip().title()
     
-    opcion_liga = st.selectbox("🤝 ¿DÓNDE QUIERES COMPETIR?", ["🌍 Ranking Global (Público)", "➕ Crear Liga Privada", "🔐 Unirse a Liga Existente"])
+    ops_ligas = ["🌍 Ranking Global (Público)", "➕ Crear Liga Privada", "🔐 Unirse a Liga Existente"]
+    saved_opc = st.session_state.get("saved_opcion", ops_ligas[0])
+    idx_opc = ops_ligas.index(saved_opc) if saved_opc in ops_ligas else 0
+    opcion_liga = st.selectbox("🤝 ¿DÓNDE QUIERES COMPETIR?", ops_ligas, index=idx_opc)
+    
     liga_limpia, clave_ingresada, clave_creada, liga_nueva = "GLOBAL", "", "", ""
     
     if opcion_liga == "➕ Crear Liga Privada":
         col_nl, col_cl = st.columns(2)
-        with col_nl: liga_nueva = st.text_input("Nombre de Liga:")
-        with col_cl: clave_creada = st.text_input("Clave Secreta:")
+        with col_nl: liga_nueva = st.text_input("Nombre de Liga:", value=st.session_state.get("saved_liga", ""))
+        with col_cl: clave_creada = st.text_input("Clave Secreta:", value=st.session_state.get("saved_clave", ""))
         liga_limpia = liga_nueva.strip().upper()
     elif opcion_liga == "🔐 Unirse a Liga Existente":
         ligas_disp = df_ligas["nombre_liga"].tolist()
         if ligas_disp:
             col_sel, col_pass = st.columns(2)
-            with col_sel: liga_seleccionada = st.selectbox("Selecciona Liga:", ligas_disp)
-            with col_pass: clave_ingresada = st.text_input("Contraseña:", type="password")
+            saved_liga_sel = st.session_state.get("saved_liga", "")
+            idx_liga_disp = ligas_disp.index(saved_liga_sel) if saved_liga_sel in ligas_disp else 0
+            with col_sel: liga_seleccionada = st.selectbox("Selecciona Liga:", ligas_disp, index=idx_liga_disp)
+            with col_pass: clave_ingresada = st.text_input("Contraseña:", type="password", value=st.session_state.get("saved_clave", ""))
             liga_limpia = liga_seleccionada
         else: st.error("No hay ligas privadas aún.")
 
@@ -629,7 +634,11 @@ with tab1:
                                 
                                 df_predicciones.to_csv(PREDICCONES_FILE, index=False)
                                 
+                                # 🔥 MEMORIA DE SESIÓN (UX)
                                 st.session_state["usuario_registrado"] = usuario_limpio
+                                st.session_state["saved_opcion"] = opcion_liga
+                                st.session_state["saved_liga"] = liga_nueva if opcion_liga == "➕ Crear Liga Privada" else liga_limpia
+                                st.session_state["saved_clave"] = clave_creada if opcion_liga == "➕ Crear Liga Privada" else clave_ingresada
                                 
                                 st.toast(f'¡Pronósticos de {fecha} asegurados!', icon='🏆')
                                 st.markdown("""
