@@ -135,8 +135,8 @@ button[data-baseweb="tab"]:hover {
     padding: 30px 20px; 
     border-radius: 16px; 
     text-align: center; 
-    border-top: 5px solid #EF4444; /* Borde rojo superior */
-    border-bottom: 5px solid #3B82F6; /* Borde azul inferior */
+    border-top: 5px solid #EF4444; 
+    border-bottom: 5px solid #3B82F6; 
     margin-bottom: 25px; 
     box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
     position: relative; 
@@ -168,7 +168,7 @@ button[data-baseweb="tab"]:hover {
 .res-score-box { 
     font-size: 2.2rem; font-weight: 900; color: #10B981; background-color: #1e293b; 
     padding: 5px 20px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; 
-    white-space: nowrap; /* 🔥 FIX: Evita que el marcador se parta en dos líneas */
+    white-space: nowrap; 
     text-align: center;
 }
 .res-col-l { width: 38%; text-align: right; }
@@ -229,8 +229,6 @@ button[data-baseweb="tab"]:hover {
     .banner-h1 { font-size: 4rem !important; }
     .banner-h2 { font-size: 1.5rem !important; }
     .stNumberInput > div > div > input { font-size: 2.2rem !important; height: 60px !important;}
-    
-    /* 🔥 FIX MÓVIL PARA TARJETAS DE RESULTADOS */
     .result-card { padding: 10px; }
     .res-team-name { font-size: 1.2rem; }
     .res-flag { font-size: 1.5rem; }
@@ -269,7 +267,6 @@ def parse_team(team_string):
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
     if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     
-    # 🔥 FIX PARA RÁNKING GLOBAL
     if not liga_filtro or liga_filtro.strip().upper() == "GLOBAL":
         df_preds = df_preds.drop_duplicates(subset=["usuario", "partido_id"])
     else:
@@ -400,46 +397,53 @@ partidos_iniciales = [
     {"id": 72, "fecha": "Sábado 27 de junio", "grupo": "Grupo J", "local": "Jordania 🇯🇴", "visita": "Argentina 🇦🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
 ]
 
-# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE ---
+# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE CON MEMORIA CACHÉ (600 SEG = 10 MIN) ---
 try:
-    df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=5).dropna(how="all")
+    df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=600).dropna(how="all")
     if df_partidos.empty or "local" not in df_partidos.columns:
         df_partidos = pd.DataFrame(partidos_iniciales)
         conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
+        st.cache_data.clear()
 except:
     df_partidos = pd.DataFrame(partidos_iniciales)
     conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
+    st.cache_data.clear()
 
 if "bloqueado" not in df_partidos.columns:
     df_partidos["bloqueado"] = False
     conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
+    st.cache_data.clear()
+
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
 
 try:
-    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=5).dropna(how="all")
+    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=600).dropna(how="all")
     if df_predicciones.empty or "usuario" not in df_predicciones.columns:
         df_predicciones = pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred", "pin_jugador"])
         conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
+        st.cache_data.clear()
 except:
     df_predicciones = pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred", "pin_jugador"])
     conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
+    st.cache_data.clear()
 
 # LIMPIEZA DE PINES PARA EVITAR .0 EN GOOGLE SHEETS
 df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
 
 try:
-    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=5).dropna(how="all")
+    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=600).dropna(how="all")
     if df_ligas.empty or "nombre_liga" not in df_ligas.columns:
         df_ligas = pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"])
         conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
+        st.cache_data.clear()
 except:
     df_ligas = pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"])
     conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
+    st.cache_data.clear()
 
 df_ligas["clave_liga"] = df_ligas["clave_liga"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip() 
 lista_fechas = df_partidos["fecha"].unique()
-
 
 # --- BANNER PRINCIPAL ANIMADO Y ÉPICO TRICOLOR ---
 st.markdown(f"""
@@ -704,6 +708,7 @@ with tab1:
                                 else:
                                     df_ligas = pd.concat([df_ligas, pd.DataFrame([{"nombre_liga": liga_limpia, "clave_liga": clave_creada_limpia, "creador": usuario_oficial}])], ignore_index=True)
                                     conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
+                                    st.cache_data.clear()
                         elif opcion_liga == "🔐 Unirse a Liga Existente" and ligas_disp:
                             clave_db = str(df_ligas[df_ligas["nombre_liga"] == liga_limpia]["clave_liga"].values[0]).strip()
                             if str(clave_ingresada).strip() != clave_db:
@@ -731,6 +736,7 @@ with tab1:
                                     df_predicciones = df_predicciones.drop(columns=['usuario_norm'])
                                     
                                 conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
+                                st.cache_data.clear()
                                 
                                 st.session_state["usuario_registrado"] = usuario_oficial
                                 st.session_state["pin_registrado"] = pin_input
@@ -830,7 +836,7 @@ with tab3:
     st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
     st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
 
-# --- PESTAÑA 4: EL VAR Y ESPIAR QUINIELAS (¡TOTALMENTE VISIBLE!) ---
+# --- PESTAÑA 4: EL VAR Y ESPIAR QUINIELAS ---
 with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(3, 11, 20, 0.6), rgba(3, 11, 20, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #3B82F6;">
@@ -839,11 +845,9 @@ with tab4:
     </div>
     """, unsafe_allow_html=True)
     
-    # Métricas Globales a prueba de errores
     if not df_predicciones.empty:
         col1, col2 = st.columns(2)
         total_apuestas = len(df_predicciones["usuario"].unique())
-        
         g_l_totales = pd.to_numeric(df_predicciones["goles_l_pred"], errors='coerce').fillna(0).sum()
         g_v_totales = pd.to_numeric(df_predicciones["goles_v_pred"], errors='coerce').fillna(0).sum()
         total_goles_predichos = int(g_l_totales + g_v_totales)
@@ -851,7 +855,6 @@ with tab4:
         with col1: st.metric("👥 Directores Técnicos (Globales)", total_apuestas)
         with col2: st.metric("⚽ Goles Totales Pronosticados", total_goles_predichos)
         
-    # 🔥 SECCIÓN NUEVA: ESPIAR QUINIELAS SIEMPRE VISIBLE
     st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
     st.markdown("<h2 style='color: #10B981; font-size: 3rem;'>🕵️‍♂️ ESPIAR QUINIELAS DE LA COMUNIDAD</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color: #94a3b8; font-size: 1.1rem;'>Selecciona tu liga y el partido para ver qué pronosticaron los demás directores técnicos.</p>", unsafe_allow_html=True)
@@ -869,6 +872,8 @@ with tab4:
     id_partido_real = df_partidos.iloc[idx_partido]["id"]
     equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
     equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
+    bandera_l = parse_team(df_partidos.iloc[idx_partido]['local'])[1]
+    bandera_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[1]
     
     df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
     if esp_liga != "GLOBAL":
@@ -877,8 +882,6 @@ with tab4:
     if not df_esp_preds.empty:
         df_esp_show = pd.DataFrame()
         df_esp_show["Director Técnico"] = df_esp_preds["usuario"]
-        
-        # Combinamos los goles de forma segura convirtiendo a string primero
         df_esp_show["Resultado Predicho"] = df_esp_preds["goles_l_pred"].astype(str) + " - " + df_esp_preds["goles_v_pred"].astype(str)
         
         st.markdown(f"<h4 style='color: #60A5FA; margin-top: 15px;'>Predicciones para: {equipo_l} vs {equipo_v} en la liga '{esp_liga}'</h4>", unsafe_allow_html=True)
@@ -898,7 +901,6 @@ with tab5:
                     l_name, l_flag = parse_team(row['local'])
                     v_name, v_flag = parse_team(row['visita'])
                     
-                    # 🔥 5 COLUMNAS PARA INCLUIR EL BOTÓN DE BLOQUEO
                     col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
                     with col1: st.write(f"**{l_flag} {l_name} vs {v_name} {v_flag}**")
                     with col2:
@@ -922,11 +924,11 @@ with tab5:
                     df_partidos.at[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
                     df_partidos.at[idx, "bloqueado"] = bool(st.session_state[f"b_{p_id}"])
                 conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
+                st.cache_data.clear()
                 st.success('Resultados Guardados Oficialmente.')
                 time.sleep(1)
                 st.rerun()
                 
-        # 🔥 PANEL DE RECUPERACIÓN PARA EL ADMIN
         st.markdown("---")
         st.markdown("<h3 style='color: #60A5FA;'>🕵️‍♂️ Panel de Recuperación y Respaldo</h3>", unsafe_allow_html=True)
         
