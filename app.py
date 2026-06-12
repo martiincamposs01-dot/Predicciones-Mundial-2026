@@ -830,7 +830,7 @@ with tab3:
     st.progress(jugados / len(df_partidos) if len(df_partidos) > 0 else 0)
     st.write(f"**Partidos finalizados:** {jugados} de {len(df_partidos)}")
 
-# --- PESTAÑA 4: EL VAR Y ESPIAR QUINIELAS ---
+# --- PESTAÑA 4: EL VAR Y ESPIAR QUINIELAS (¡TOTALMENTE VISIBLE!) ---
 with tab4:
     st.markdown("""
     <div style="background-image: linear-gradient(rgba(3, 11, 20, 0.6), rgba(3, 11, 20, 0.9)), url('https://images.unsplash.com/photo-1508344928928-7137b29de216?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; padding: 30px; border-radius: 12px; margin-bottom: 20px; border-bottom: 4px solid #3B82F6;">
@@ -839,51 +839,52 @@ with tab4:
     </div>
     """, unsafe_allow_html=True)
     
-    if df_predicciones.empty:
-        st.info("Aún no hay suficientes predicciones para mostrar las estadísticas.")
-    else:
+    # Métricas Globales a prueba de errores
+    if not df_predicciones.empty:
         col1, col2 = st.columns(2)
         total_apuestas = len(df_predicciones["usuario"].unique())
-        total_goles_predichos = df_predicciones["goles_l_pred"].sum() + df_predicciones["goles_v_pred"].sum()
+        
+        g_l_totales = pd.to_numeric(df_predicciones["goles_l_pred"], errors='coerce').fillna(0).sum()
+        g_v_totales = pd.to_numeric(df_predicciones["goles_v_pred"], errors='coerce').fillna(0).sum()
+        total_goles_predichos = int(g_l_totales + g_v_totales)
+        
         with col1: st.metric("👥 Directores Técnicos (Globales)", total_apuestas)
         with col2: st.metric("⚽ Goles Totales Pronosticados", total_goles_predichos)
         
-        # 🔥 SECCIÓN NUEVA: ESPIAR QUINIELAS RESTAURADA
-        st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color: #10B981; font-size: 3rem;'>🕵️‍♂️ ESPIAR QUINIELAS DE LA COMUNIDAD</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #94a3b8; font-size: 1.1rem;'>Selecciona tu liga y el partido para ver qué pronosticaron los demás directores técnicos.</p>", unsafe_allow_html=True)
+    # 🔥 SECCIÓN NUEVA: ESPIAR QUINIELAS SIEMPRE VISIBLE
+    st.markdown("<br><hr style='border-color: #1e293b;'><br>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #10B981; font-size: 3rem;'>🕵️‍♂️ ESPIAR QUINIELAS DE LA COMUNIDAD</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 1.1rem;'>Selecciona tu liga y el partido para ver qué pronosticaron los demás directores técnicos.</p>", unsafe_allow_html=True)
+    
+    col_esp1, col_esp2 = st.columns(2)
+    with col_esp1:
+        opciones_ligas_esp = ["GLOBAL"]
+        if not df_ligas.empty: opciones_ligas_esp.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
+        esp_liga = st.selectbox("1️⃣ Selecciona la Liga a espiar:", opciones_ligas_esp, key="esp_liga").strip().upper()
+    with col_esp2:
+        opciones_partidos = [f"{row['fecha']} | {parse_team(row['local'])[0]} vs {parse_team(row['visita'])[0]}" for _, row in df_partidos.iterrows()]
+        esp_partido = st.selectbox("2️⃣ Selecciona el Partido:", opciones_partidos, key="esp_partido")
+    
+    idx_partido = opciones_partidos.index(esp_partido)
+    id_partido_real = df_partidos.iloc[idx_partido]["id"]
+    equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
+    equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
+    
+    df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
+    if esp_liga != "GLOBAL":
+        df_esp_preds = df_esp_preds[df_esp_preds["liga"].str.upper() == esp_liga]
         
-        col_esp1, col_esp2 = st.columns(2)
-        with col_esp1:
-            opciones_ligas_esp = ["GLOBAL"]
-            if not df_ligas.empty: opciones_ligas_esp.extend(sorted(df_ligas["nombre_liga"].unique().tolist()))
-            esp_liga = st.selectbox("1️⃣ Selecciona la Liga a espiar:", opciones_ligas_esp, key="esp_liga").strip().upper()
-        with col_esp2:
-            opciones_partidos = [f"{row['fecha']} | {parse_team(row['local'])[0]} vs {parse_team(row['visita'])[0]}" for _, row in df_partidos.iterrows()]
-            esp_partido = st.selectbox("2️⃣ Selecciona el Partido:", opciones_partidos, key="esp_partido")
+    if not df_esp_preds.empty:
+        df_esp_show = pd.DataFrame()
+        df_esp_show["Director Técnico"] = df_esp_preds["usuario"]
         
-        idx_partido = opciones_partidos.index(esp_partido)
-        id_partido_real = df_partidos.iloc[idx_partido]["id"]
-        equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
-        equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
-        bandera_l = parse_team(df_partidos.iloc[idx_partido]['local'])[1]
-        bandera_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[1]
+        # Combinamos los goles de forma segura convirtiendo a string primero
+        df_esp_show["Resultado Predicho"] = df_esp_preds["goles_l_pred"].astype(str) + " - " + df_esp_preds["goles_v_pred"].astype(str)
         
-        df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
-        if esp_liga != "GLOBAL":
-            df_esp_preds = df_esp_preds[df_esp_preds["liga"].str.upper() == esp_liga]
-            
-        if not df_esp_preds.empty:
-            df_esp_show = pd.DataFrame()
-            df_esp_show["Director Técnico"] = df_esp_preds["usuario"]
-            df_esp_show[f"Goles {equipo_l} {bandera_l}"] = df_esp_preds["goles_l_pred"].astype(str)
-            df_esp_show[f"Goles {equipo_v} {bandera_v}"] = df_esp_preds["goles_v_pred"].astype(str)
-            df_esp_show["Resultado Predicho"] = df_esp_show.apply(lambda x: f"{x.iloc[1]} - {x.iloc[2]}", axis=1)
-            
-            st.markdown(f"<h4 style='color: #60A5FA; margin-top: 15px;'>Predicciones para: {equipo_l} vs {equipo_v} en la liga '{esp_liga}'</h4>", unsafe_allow_html=True)
-            st.dataframe(df_esp_show[["Director Técnico", "Resultado Predicho"]], use_container_width=True, hide_index=True)
-        else:
-            st.info("Nadie en esta liga ha pronosticado este partido aún. ¡Aprovecha la ventaja!")
+        st.markdown(f"<h4 style='color: #60A5FA; margin-top: 15px;'>Predicciones para: {equipo_l} vs {equipo_v} en la liga '{esp_liga}'</h4>", unsafe_allow_html=True)
+        st.dataframe(df_esp_show[["Director Técnico", "Resultado Predicho"]], use_container_width=True, hide_index=True)
+    else:
+        st.info("Nadie en esta liga ha pronosticado este partido aún. ¡Aprovecha la ventaja estratégica!")
 
 # --- PESTAÑA 5: ADMIN Y RECUPERACIÓN ---
 with tab5:
