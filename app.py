@@ -149,6 +149,24 @@ button[data-baseweb="tab"]:hover {
 .vs-text { font-size: 3.5rem; color: #EF4444; font-weight: 400; font-style: italic; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-top: 25px; }
 .group-class { color: #9CA3AF; font-size: 1.3rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; font-family: 'Montserrat', sans-serif;}
 
+/* --- NUEVOS ESTILOS PARA TARJETAS DE RESULTADOS --- */
+.result-card {
+    background-color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
+    border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
+    display: flex; justify-content: space-between; align-items: center;
+}
+.res-team-name { font-size: 1.6rem; font-family: 'Bebas Neue', sans-serif; color: white; letter-spacing: 1px; }
+.res-flag { font-size: 2rem; }
+.res-score-box { 
+    font-size: 2.2rem; font-weight: 900; color: #10B981; background-color: #1e293b; 
+    padding: 5px 20px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; 
+    white-space: nowrap; /* 🔥 FIX: Evita que el marcador se parta en dos líneas */
+    text-align: center;
+}
+.res-col-l { width: 38%; text-align: right; }
+.res-col-c { width: 24%; text-align: center; display: flex; justify-content: center;}
+.res-col-r { width: 38%; text-align: left; }
+
 /* Cajas personalizadas */
 .custom-box { 
     background: rgba(15, 23, 42, 0.8); 
@@ -203,6 +221,12 @@ button[data-baseweb="tab"]:hover {
     .banner-h1 { font-size: 4rem !important; }
     .banner-h2 { font-size: 1.5rem !important; }
     .stNumberInput > div > div > input { font-size: 2.2rem !important; height: 60px !important;}
+    
+    /* 🔥 FIX MÓVIL PARA TARJETAS DE RESULTADOS */
+    .result-card { padding: 10px; }
+    .res-team-name { font-size: 1.2rem; }
+    .res-flag { font-size: 1.5rem; }
+    .res-score-box { font-size: 1.4rem; padding: 5px 10px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -219,7 +243,6 @@ BANNED_WORDS = [
 ]
 
 def normalizar_nombre(nombre):
-    """Limpia el nombre de tildes y mayúsculas para evitar problemas de duplicados accidentales."""
     if not isinstance(nombre, str) or not nombre:
         return ""
     nombre_limpio = ''.join((c for c in unicodedata.normalize('NFD', nombre) if unicodedata.category(c) != 'Mn'))
@@ -337,7 +360,11 @@ lista_fechas = df_partidos["fecha"].unique()
 # --- FUNCIONES AUXILIARES ---
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
     if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
-    if liga_filtro and liga_filtro.strip().upper() != "GLOBAL":
+    
+    # 🔥 FIX PARA RÁNKING GLOBAL
+    if not liga_filtro or liga_filtro.strip().upper() == "GLOBAL":
+        df_preds = df_preds.drop_duplicates(subset=["usuario", "partido_id"])
+    else:
         df_preds = df_preds[df_preds["liga"].str.upper() == liga_filtro.strip().upper()]
         if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
 
@@ -464,6 +491,7 @@ with tab0:
         <li><strong style="color: #10B981;">+3 Puntos (Pleno):</strong> ¡Le achuntaste al resultado exacto! (Ej: Predices 2-1 y termina 2-1).</li>
         <li><strong style="color: #60A5FA;">+1 Punto (Tendencia):</strong> Le achuntaste al ganador o al empate, pero no a los goles exactos.</li>
         <li><strong style="color: #EF4444;">+0 Puntos:</strong> No le achuntaste a nada. Suerte para la próxima.</li>
+        <li><strong style="color: #F59E0B;">⏰ ¡Cierre de Predicciones!:</strong> El Admin bloqueará los partidos antes del pitazo inicial. ¡No lo dejes para última hora!</li>
     </ul>
 </div>
     """, unsafe_allow_html=True)
@@ -749,10 +777,10 @@ with tab_res:
                 gv = row['goles_v_real']
                 
                 st.markdown(f"""
-                <div style='background-color:#0f172a; padding:15px; border-radius:12px; margin-bottom:15px; border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; justify-content: space-between; align-items: center;'>
-                    <div style='width: 40%; text-align: right;'><span style='font-size:1.6rem; font-family: "Bebas Neue", sans-serif; color: white; letter-spacing: 1px;'>{l_name}</span> <span style='font-size:2rem;'>{l_flag}</span></div>
-                    <div style='width: 20%; text-align: center;'><span style='font-size:2.2rem; font-weight:900; color:#10B981; background-color:#1e293b; padding: 5px 20px; border-radius:8px; font-family: "Bebas Neue", sans-serif;'>{gl} - {gv}</span></div>
-                    <div style='width: 40%; text-align: left;'><span style='font-size:2rem;'>{v_flag}</span> <span style='font-size:1.6rem; font-family: "Bebas Neue", sans-serif; color: white; letter-spacing: 1px;'>{v_name}</span></div>
+                <div class='result-card'>
+                    <div class='res-col-l'><span class='res-team-name'>{l_name}</span> <span class='res-flag'>{l_flag}</span></div>
+                    <div class='res-col-c'><span class='res-score-box'>{gl} - {gv}</span></div>
+                    <div class='res-col-r'><span class='res-flag'>{v_flag}</span> <span class='res-team-name'>{v_name}</span></div>
                 </div>
                 """, unsafe_allow_html=True)
 
