@@ -59,9 +59,7 @@ footer {visibility: hidden;}
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
-/* ---------------------------------------------------
-   Pestañas (Tabs) ULTRA VISIBLES TRICOLOR
---------------------------------------------------- */
+/* Pestañas (Tabs) ULTRA VISIBLES TRICOLOR */
 div[data-baseweb="tab-list"] {
     gap: 12px;
     border-bottom: 3px solid #3B82F6; 
@@ -135,8 +133,8 @@ button[data-baseweb="tab"]:hover {
     padding: 30px 20px; 
     border-radius: 16px; 
     text-align: center; 
-    border-top: 5px solid #EF4444; /* Borde rojo superior */
-    border-bottom: 5px solid #3B82F6; /* Borde azul inferior */
+    border-top: 5px solid #EF4444; 
+    border-bottom: 5px solid #3B82F6; 
     margin-bottom: 25px; 
     box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
     position: relative; 
@@ -157,7 +155,7 @@ button[data-baseweb="tab"]:hover {
 .vs-text { font-size: 3.5rem; color: #EF4444; font-weight: 400; font-style: italic; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-top: 25px; }
 .group-class { color: #9CA3AF; font-size: 1.3rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; font-family: 'Montserrat', sans-serif;}
 
-/* --- NUEVOS ESTILOS PARA TARJETAS DE RESULTADOS --- */
+/* Tarjetas de Resultados */
 .result-card {
     background-color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
     border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
@@ -168,7 +166,7 @@ button[data-baseweb="tab"]:hover {
 .res-score-box { 
     font-size: 2.2rem; font-weight: 900; color: #10B981; background-color: #1e293b; 
     padding: 5px 20px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; 
-    white-space: nowrap; /* 🔥 FIX: Evita que el marcador se parta en dos líneas */
+    white-space: nowrap; 
     text-align: center;
 }
 .res-col-l { width: 38%; text-align: right; }
@@ -185,7 +183,7 @@ button[data-baseweb="tab"]:hover {
     box-shadow: 0 8px 20px rgba(0,0,0,0.5); 
 }
 
-/* Inputs de Goles Gigantes (Visual Moderno) */
+/* Inputs de Goles Gigantes */
 .stNumberInput > div > div > input { 
     border-radius: 10px !important; font-weight: bold !important; font-family: 'Bebas Neue', sans-serif !important; 
     font-size: 3rem !important; text-align: center !important; background-color: #1e293b !important; 
@@ -198,7 +196,7 @@ button[data-baseweb="tab"]:hover {
     font-family: 'Montserrat', sans-serif !important; font-size: 1.1rem !important;
 }
 
-/* 🏆 BANNER ENCUADRE TOP PREMIUM 🏆 */
+/* BANNER */
 .banner-container {
     background-size: cover; 
     background-position: center 30%; 
@@ -219,7 +217,6 @@ button[data-baseweb="tab"]:hover {
     background: linear-gradient(to top, #030b14, rgba(3, 11, 20, 0.2)); border-radius: 13px;
 }
 
-/* Responsivo para celulares */
 @media (max-width: 768px) {
     .team-name { font-size: 1.5rem; }
     .vs-text { font-size: 2.5rem; margin-top: 30px; }
@@ -229,8 +226,6 @@ button[data-baseweb="tab"]:hover {
     .banner-h1 { font-size: 4rem !important; }
     .banner-h2 { font-size: 1.5rem !important; }
     .stNumberInput > div > div > input { font-size: 2.2rem !important; height: 60px !important;}
-    
-    /* 🔥 FIX MÓVIL PARA TARJETAS DE RESULTADOS */
     .result-card { padding: 10px; }
     .res-team-name { font-size: 1.2rem; }
     .res-flag { font-size: 1.5rem; }
@@ -269,7 +264,6 @@ def parse_team(team_string):
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
     if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     
-    # 🔥 FIX PARA RÁNKING GLOBAL
     if not liga_filtro or liga_filtro.strip().upper() == "GLOBAL":
         df_preds = df_preds.drop_duplicates(subset=["usuario", "partido_id"])
     else:
@@ -324,7 +318,7 @@ except Exception as e:
     st.error(f"⚠️ Error de conexión en la base de datos: {str(e)}")
     st.stop()
 
-# --- INICIALIZACIÓN DEL FIXTURE COMPLETO ---
+# --- FIXTURE INICIAL COMPLETO ---
 partidos_iniciales = [
     {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
     {"id": 2, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "Corea del Sur 🇰🇷", "visita": "República Checa 🇨🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
@@ -409,12 +403,18 @@ except Exception as e:
     st.warning("⏳ Google detectó a muchos técnicos analizando al mismo tiempo. Por favor, espera 60 segundos sin tocar nada y la página volverá a la normalidad.")
     st.stop()
 
-# --- FORMATEO Y LIMPIEZA OBLIGATORIA ---
+# --- FORMATEO Y LIMPIEZA OBLIGATORIA (VACUNA ANTI-FLOAT64) ---
 if "bloqueado" not in df_partidos.columns: 
     df_partidos["bloqueado"] = False
+if "jugado" not in df_partidos.columns: 
+    df_partidos["jugado"] = False
     
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
+
+# 🔥 LA CURA: Forzar a que estas columnas acepten texto y booleanos, no decimales
+df_partidos["jugado"] = df_partidos["jugado"].astype(object)
+df_partidos["bloqueado"] = df_partidos["bloqueado"].astype(object)
 
 if "pin_jugador" in df_predicciones.columns:
     df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
