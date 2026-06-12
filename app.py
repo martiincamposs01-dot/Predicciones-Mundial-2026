@@ -59,9 +59,7 @@ footer {visibility: hidden;}
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
-/* ---------------------------------------------------
-   Pestañas (Tabs) ULTRA VISIBLES TRICOLOR
---------------------------------------------------- */
+/* Pestañas (Tabs) ULTRA VISIBLES TRICOLOR */
 div[data-baseweb="tab-list"] {
     gap: 12px;
     border-bottom: 3px solid #3B82F6; 
@@ -157,7 +155,7 @@ button[data-baseweb="tab"]:hover {
 .vs-text { font-size: 3.5rem; color: #EF4444; font-weight: 400; font-style: italic; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-top: 25px; }
 .group-class { color: #9CA3AF; font-size: 1.3rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; font-family: 'Montserrat', sans-serif;}
 
-/* --- NUEVOS ESTILOS PARA TARJETAS DE RESULTADOS --- */
+/* Tarjetas de Resultados */
 .result-card {
     background-color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
     border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
@@ -175,7 +173,6 @@ button[data-baseweb="tab"]:hover {
 .res-col-c { width: 24%; text-align: center; display: flex; justify-content: center;}
 .res-col-r { width: 38%; text-align: left; }
 
-/* Cajas personalizadas */
 .custom-box { 
     background: rgba(15, 23, 42, 0.8); 
     border-radius: 12px; 
@@ -185,7 +182,7 @@ button[data-baseweb="tab"]:hover {
     box-shadow: 0 8px 20px rgba(0,0,0,0.5); 
 }
 
-/* Inputs de Goles Gigantes (Visual Moderno) */
+/* Inputs de Goles Gigantes */
 .stNumberInput > div > div > input { 
     border-radius: 10px !important; font-weight: bold !important; font-family: 'Bebas Neue', sans-serif !important; 
     font-size: 3rem !important; text-align: center !important; background-color: #1e293b !important; 
@@ -198,7 +195,7 @@ button[data-baseweb="tab"]:hover {
     font-family: 'Montserrat', sans-serif !important; font-size: 1.1rem !important;
 }
 
-/* 🏆 BANNER ENCUADRE TOP PREMIUM 🏆 */
+/* BANNER */
 .banner-container {
     background-size: cover; 
     background-position: center 30%; 
@@ -219,7 +216,6 @@ button[data-baseweb="tab"]:hover {
     background: linear-gradient(to top, #030b14, rgba(3, 11, 20, 0.2)); border-radius: 13px;
 }
 
-/* Responsivo para celulares */
 @media (max-width: 768px) {
     .team-name { font-size: 1.5rem; }
     .vs-text { font-size: 2.5rem; margin-top: 30px; }
@@ -321,7 +317,7 @@ except Exception as e:
     st.error(f"⚠️ Error de conexión en la base de datos: {str(e)}")
     st.stop()
 
-# --- INICIALIZACIÓN DEL FIXTURE COMPLETO ---
+# --- FIXTURE INICIAL COMPLETO ---
 partidos_iniciales = [
     {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
     {"id": 2, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "Corea del Sur 🇰🇷", "visita": "República Checa 🇨🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
@@ -397,82 +393,41 @@ partidos_iniciales = [
     {"id": 72, "fecha": "Sábado 27 de junio", "grupo": "Grupo J", "local": "Jordania 🇯🇴", "visita": "Argentina 🇦🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
 ]
 
-# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE CON MEMORIA CACHÉ (600 SEG = 10 MIN) ---
+# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE (ESCUDO ANTI-SOBRECARGA) ---
 try:
     df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=600).dropna(how="all")
-    if df_partidos.empty or "local" not in df_partidos.columns:
-        df_partidos = pd.DataFrame(partidos_iniciales)
-        conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
-        st.cache_data.clear()
-except:
-    df_partidos = pd.DataFrame(partidos_iniciales)
-    conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
-    st.cache_data.clear()
+    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=600).dropna(how="all")
+    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=600).dropna(how="all")
+except Exception as e:
+    st.warning("⏳ Google detectó a muchos técnicos analizando al mismo tiempo. Por favor, espera 60 segundos sin tocar nada y la página volverá a la normalidad.")
+    st.stop()
 
-if "bloqueado" not in df_partidos.columns:
+# --- FORMATEO Y LIMPIEZA OBLIGATORIA ---
+if "bloqueado" not in df_partidos.columns: 
     df_partidos["bloqueado"] = False
-    conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
-    st.cache_data.clear()
 
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
 
-try:
-    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=600).dropna(how="all")
-    if df_predicciones.empty or "usuario" not in df_predicciones.columns:
-        df_predicciones = pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred", "pin_jugador"])
-        conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
-        st.cache_data.clear()
-except:
-    df_predicciones = pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred", "pin_jugador"])
-    conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
-    st.cache_data.clear()
+if "pin_jugador" in df_predicciones.columns:
+    df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
 
-# LIMPIEZA DE PINES PARA EVITAR .0 EN GOOGLE SHEETS
-df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+if "clave_liga" in df_ligas.columns:
+    df_ligas["clave_liga"] = df_ligas["clave_liga"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip() 
 
-try:
-    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=600).dropna(how="all")
-    if df_ligas.empty or "nombre_liga" not in df_ligas.columns:
-        df_ligas = pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"])
-        conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
-        st.cache_data.clear()
-except:
-    df_ligas = pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"])
-    conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
-    st.cache_data.clear()
-
-df_ligas["clave_liga"] = df_ligas["clave_liga"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip() 
 lista_fechas = df_partidos["fecha"].unique()
 
-# --- BANNER PRINCIPAL ANIMADO Y ÉPICO TRICOLOR ---
-st.markdown(f"""
-<div class="banner-container" style="background-image: linear-gradient(to bottom, rgba(3, 11, 20, 0.3) 0%, rgba(3, 11, 20, 0.95) 100%), url('{BANNER_PRINCIPAL}');">
-    <h1 class="banner-h1" style="color: #ffffff; font-size: 7.5rem; margin-top:10px; margin-bottom:0px; line-height: 1; text-transform: uppercase; letter-spacing: 6px; text-shadow: 4px 4px 15px rgba(239, 68, 68, 0.9); font-family: 'Bebas Neue', sans-serif; z-index: 2;">MUNDIAL <span style="color:#10B981;">2026</span></h1>
-    <h2 class="banner-h2" style="color: #60A5FA; font-size: 3rem; margin-top: 10px; font-weight: 400; letter-spacing: 4px; font-family: 'Bebas Neue', sans-serif; text-shadow: 2px 2px 10px black; z-index: 2;">🇺🇸 EEUU <span style="color:white;">•</span> 🇲🇽 MÉXICO <span style="color:white;">•</span> 🇨🇦 CANADÁ</h2>
-</div>
-""", unsafe_allow_html=True)
-
-# --- TICKER DE NOTICIAS ---
-st.markdown("""
-<div class="ticker-wrap">
-    <marquee scrollamount="12">🚨 EN VIVO: EL MUNDIAL SE VIVE AQUÍ | ⚽ ¡Sella tus pronósticos antes del pitazo inicial!... 🏆 ¿Quién levantará la copa este año?... 📊 Crea tu liga privada y reta a tus amigos...</marquee>
-</div>
-""", unsafe_allow_html=True)
-
-# --- PESTAÑAS NOMBRADAS EXPLÍCITAMENTE CON LA NUEVA PESTAÑA DE RESULTADOS ---
+# --- PESTAÑAS ---
 tab0, tab1, tab2, tab_res, tab3, tab4, tab5 = st.tabs(["🏠 LOBBY", "📝 PREDICCIONES ⚽", "🏆 RÁNKINGS", "✅ RESULTADOS", "ℹ️ INFO", "📺 EL VAR", "🔒 ÁRBITRO"])
 
-# --- PESTAÑA 0: LOBBY REORGANIZADO ---
+# --- PESTAÑA 0: LOBBY ---
 with tab0:
     url_whatsapp = f"https://api.whatsapp.com/send?text={urllib.parse.quote('🏆 ¡Únete a la liga de pronósticos del Mundial 2026! ⚽ Deja tus resultados aquí: ' + URL_APP_MUNDIAL)}"
     st.markdown(f"""
     <div style="background: linear-gradient(90deg, #3B82F6 0%, #1e3a8a 100%); padding: 2px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
         <div style="background-color: #0d1b2a; padding: 20px 25px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
             <div style="flex: 1;">
-                <h3 style="color: #60A5FA; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px; font-size: 2.2rem; margin:0; text-transform: uppercase;">
-                    🌍 INVITA A TUS AMIGOS
-                </h3>
+                <h3 style="color: #60A5FA; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px; font-size: 2.2rem; margin:0; text-transform: uppercase;">🌍 INVITA A TUS AMIGOS</h3>
                 <p style="color: #94a3b8; margin: 5px 0 0 0; font-size: 1rem;">Copia el enlace de abajo o comparte directamente con un clic.</p>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
@@ -594,7 +549,6 @@ with tab1:
         else: st.error("No hay ligas privadas aún.")
 
     st.markdown("---")
-    
     bloquear_acceso = False
     
     if not usuario_norm_input or not pin_input:
@@ -607,7 +561,6 @@ with tab1:
         pred_usuario_liga = df_predicciones[(df_predicciones['usuario_norm'] == usuario_norm_input) & (df_predicciones['liga'] == liga_limpia)]
         
         ya_registrado = not pred_usuario_liga.empty
-        
         pin_correcto = False
         usuario_oficial = usuario_input.strip().title()
 
@@ -872,8 +825,6 @@ with tab4:
     id_partido_real = df_partidos.iloc[idx_partido]["id"]
     equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
     equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
-    bandera_l = parse_team(df_partidos.iloc[idx_partido]['local'])[1]
-    bandera_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[1]
     
     df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
     if esp_liga != "GLOBAL":
@@ -889,7 +840,7 @@ with tab4:
     else:
         st.info("Nadie en esta liga ha pronosticado este partido aún. ¡Aprovecha la ventaja estratégica!")
 
-# --- PESTAÑA 5: ADMIN Y RECUPERACIÓN ---
+# --- PESTAÑA 5: ÁRBITRO ---
 with tab5:
     st.markdown("<h2 style='color: #EF4444; font-size: 3.5rem;'>🔒 CAMARÍN DEL ÁRBITRO (OFFICIALS ONLY)</h2>", unsafe_allow_html=True)
     if st.text_input("Ingresa la credencial de acceso:", type="password") == PASSWORD_ADMIN:
