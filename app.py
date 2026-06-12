@@ -402,7 +402,7 @@ partidos_iniciales = [
 
 # --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE ---
 try:
-    df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=0).dropna(how="all")
+    df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=5).dropna(how="all")
     if df_partidos.empty or "local" not in df_partidos.columns:
         df_partidos = pd.DataFrame(partidos_iniciales)
         conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
@@ -417,7 +417,7 @@ df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
 
 try:
-    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=0).dropna(how="all")
+    df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=5).dropna(how="all")
     if df_predicciones.empty or "usuario" not in df_predicciones.columns:
         df_predicciones = pd.DataFrame(columns=["usuario", "liga", "partido_id", "goles_l_pred", "goles_v_pred", "pin_jugador"])
         conn.update(spreadsheet=SHEET_URL, worksheet="predicciones", data=df_predicciones)
@@ -429,7 +429,7 @@ except:
 df_predicciones["pin_jugador"] = df_predicciones["pin_jugador"].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
 
 try:
-    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=0).dropna(how="all")
+    df_ligas = conn.read(spreadsheet=SHEET_URL, worksheet="ligas", ttl=5).dropna(how="all")
     if df_ligas.empty or "nombre_liga" not in df_ligas.columns:
         df_ligas = pd.DataFrame(columns=["nombre_liga", "clave_liga", "creador"])
         conn.update(spreadsheet=SHEET_URL, worksheet="ligas", data=df_ligas)
