@@ -59,7 +59,9 @@ footer {visibility: hidden;}
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
-/* Pestañas (Tabs) ULTRA VISIBLES TRICOLOR */
+/* ---------------------------------------------------
+   Pestañas (Tabs) ULTRA VISIBLES TRICOLOR
+--------------------------------------------------- */
 div[data-baseweb="tab-list"] {
     gap: 12px;
     border-bottom: 3px solid #3B82F6; 
@@ -133,8 +135,8 @@ button[data-baseweb="tab"]:hover {
     padding: 30px 20px; 
     border-radius: 16px; 
     text-align: center; 
-    border-top: 5px solid #EF4444; 
-    border-bottom: 5px solid #3B82F6; 
+    border-top: 5px solid #EF4444; /* Borde rojo superior */
+    border-bottom: 5px solid #3B82F6; /* Borde azul inferior */
     margin-bottom: 25px; 
     box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
     position: relative; 
@@ -155,7 +157,7 @@ button[data-baseweb="tab"]:hover {
 .vs-text { font-size: 3.5rem; color: #EF4444; font-weight: 400; font-style: italic; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-top: 25px; }
 .group-class { color: #9CA3AF; font-size: 1.3rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; font-family: 'Montserrat', sans-serif;}
 
-/* Tarjetas de Resultados */
+/* --- NUEVOS ESTILOS PARA TARJETAS DE RESULTADOS --- */
 .result-card {
     background-color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
     border-left: 5px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
@@ -166,13 +168,14 @@ button[data-baseweb="tab"]:hover {
 .res-score-box { 
     font-size: 2.2rem; font-weight: 900; color: #10B981; background-color: #1e293b; 
     padding: 5px 20px; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; 
-    white-space: nowrap; 
+    white-space: nowrap; /* 🔥 FIX: Evita que el marcador se parta en dos líneas */
     text-align: center;
 }
 .res-col-l { width: 38%; text-align: right; }
 .res-col-c { width: 24%; text-align: center; display: flex; justify-content: center;}
 .res-col-r { width: 38%; text-align: left; }
 
+/* Cajas personalizadas */
 .custom-box { 
     background: rgba(15, 23, 42, 0.8); 
     border-radius: 12px; 
@@ -182,7 +185,7 @@ button[data-baseweb="tab"]:hover {
     box-shadow: 0 8px 20px rgba(0,0,0,0.5); 
 }
 
-/* Inputs de Goles Gigantes */
+/* Inputs de Goles Gigantes (Visual Moderno) */
 .stNumberInput > div > div > input { 
     border-radius: 10px !important; font-weight: bold !important; font-family: 'Bebas Neue', sans-serif !important; 
     font-size: 3rem !important; text-align: center !important; background-color: #1e293b !important; 
@@ -195,7 +198,7 @@ button[data-baseweb="tab"]:hover {
     font-family: 'Montserrat', sans-serif !important; font-size: 1.1rem !important;
 }
 
-/* BANNER */
+/* 🏆 BANNER ENCUADRE TOP PREMIUM 🏆 */
 .banner-container {
     background-size: cover; 
     background-position: center 30%; 
@@ -216,6 +219,7 @@ button[data-baseweb="tab"]:hover {
     background: linear-gradient(to top, #030b14, rgba(3, 11, 20, 0.2)); border-radius: 13px;
 }
 
+/* Responsivo para celulares */
 @media (max-width: 768px) {
     .team-name { font-size: 1.5rem; }
     .vs-text { font-size: 2.5rem; margin-top: 30px; }
@@ -225,6 +229,8 @@ button[data-baseweb="tab"]:hover {
     .banner-h1 { font-size: 4rem !important; }
     .banner-h2 { font-size: 1.5rem !important; }
     .stNumberInput > div > div > input { font-size: 2.2rem !important; height: 60px !important;}
+    
+    /* 🔥 FIX MÓVIL PARA TARJETAS DE RESULTADOS */
     .result-card { padding: 10px; }
     .res-team-name { font-size: 1.2rem; }
     .res-flag { font-size: 1.5rem; }
@@ -263,6 +269,7 @@ def parse_team(team_string):
 def calcular_tabla(df_p, df_preds, liga_filtro=None):
     if df_preds.empty: return pd.DataFrame(columns=["Participante", "Rango 🎖️", "Puntos Totales", "Exactos (3pts)", "Tendencias (1pt)"])
     
+    # 🔥 FIX PARA RÁNKING GLOBAL
     if not liga_filtro or liga_filtro.strip().upper() == "GLOBAL":
         df_preds = df_preds.drop_duplicates(subset=["usuario", "partido_id"])
     else:
@@ -317,7 +324,7 @@ except Exception as e:
     st.error(f"⚠️ Error de conexión en la base de datos: {str(e)}")
     st.stop()
 
-# --- FIXTURE INICIAL COMPLETO ---
+# --- INICIALIZACIÓN DEL FIXTURE COMPLETO ---
 partidos_iniciales = [
     {"id": 1, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "México 🇲🇽", "visita": "Sudáfrica 🇿🇦", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
     {"id": 2, "fecha": "Jueves 11 de junio", "grupo": "Grupo A", "local": "Corea del Sur 🇰🇷", "visita": "República Checa 🇨🇿", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
@@ -393,7 +400,7 @@ partidos_iniciales = [
     {"id": 72, "fecha": "Sábado 27 de junio", "grupo": "Grupo J", "local": "Jordania 🇯🇴", "visita": "Argentina 🇦🇷", "goles_l_real": "-", "goles_v_real": "-", "jugado": False, "bloqueado": False},
 ]
 
-# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE (ESCUDO ANTI-SOBRECARGA) ---
+# --- LECTURA DE BASES DE DATOS DESDE GOOGLE DRIVE (SIN BUCLES DE ERROR) ---
 try:
     df_partidos = conn.read(spreadsheet=SHEET_URL, worksheet="partidos", ttl=600).dropna(how="all")
     df_predicciones = conn.read(spreadsheet=SHEET_URL, worksheet="predicciones", ttl=600).dropna(how="all")
@@ -405,7 +412,7 @@ except Exception as e:
 # --- FORMATEO Y LIMPIEZA OBLIGATORIA ---
 if "bloqueado" not in df_partidos.columns: 
     df_partidos["bloqueado"] = False
-
+    
 df_partidos["goles_l_real"] = df_partidos["goles_l_real"].astype(str)
 df_partidos["goles_v_real"] = df_partidos["goles_v_real"].astype(str)
 
@@ -825,6 +832,8 @@ with tab4:
     id_partido_real = df_partidos.iloc[idx_partido]["id"]
     equipo_l = parse_team(df_partidos.iloc[idx_partido]['local'])[0]
     equipo_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[0]
+    bandera_l = parse_team(df_partidos.iloc[idx_partido]['local'])[1]
+    bandera_v = parse_team(df_partidos.iloc[idx_partido]['visita'])[1]
     
     df_esp_preds = df_predicciones[df_predicciones["partido_id"] == id_partido_real]
     if esp_liga != "GLOBAL":
@@ -868,15 +877,15 @@ with tab5:
                         marcar_jugado = st.checkbox("Terminó ✅", value=row["jugado"], key=f"j_{row['id']}")
                     st.markdown("---")
             if st.form_submit_button("CERRAR RESULTADOS OFICIALES"):
-                for idx, row in df_partidos.iterrows():
-                    p_id = row["id"]
-                    df_partidos.at[idx, "goles_l_real"] = str(int(st.session_state[f"rl_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
-                    df_partidos.at[idx, "goles_v_real"] = str(int(st.session_state[f"rv_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
-                    df_partidos.at[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
-                    df_partidos.at[idx, "bloqueado"] = bool(st.session_state[f"b_{p_id}"])
+                for idx in df_partidos.index:
+                    p_id = df_partidos.loc[idx, "id"]
+                    df_partidos.loc[idx, "goles_l_real"] = str(int(st.session_state[f"rl_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
+                    df_partidos.loc[idx, "goles_v_real"] = str(int(st.session_state[f"rv_{p_id}"])) if st.session_state[f"j_{p_id}"] else "-"
+                    df_partidos.loc[idx, "jugado"] = bool(st.session_state[f"j_{p_id}"])
+                    df_partidos.loc[idx, "bloqueado"] = bool(st.session_state[f"b_{p_id}"])
                 conn.update(spreadsheet=SHEET_URL, worksheet="partidos", data=df_partidos)
                 st.cache_data.clear()
-                st.success('Resultados Guardados Oficialmente.')
+                st.success('Resultados y Bloqueos Guardados Oficialmente.')
                 time.sleep(1)
                 st.rerun()
                 
